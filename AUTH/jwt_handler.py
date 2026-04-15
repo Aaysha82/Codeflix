@@ -16,8 +16,16 @@ JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 JWT_EXPIRY_HOURS = int(os.getenv("JWT_EXPIRY_HOURS", "24"))
 
 ROLES = {
-    "admin": ["read", "write", "delete", "generate_sar", "manage_users", "view_audit"],
-    "analyst": ["read", "write", "generate_sar", "view_audit"],
+    "admin": [
+        "read", "write", "delete", "generate_sar", "edit_sar", 
+        "approve_sar", "manage_users", "view_audit", "system_metrics"
+    ],
+    "analyst": [
+        "read", "write", "generate_sar", "edit_sar", "view_audit"
+    ],
+    "manager": [
+        "read", "generate_sar", "approve_sar", "view_audit"
+    ]
 }
 
 
@@ -30,7 +38,21 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     to_encode.update({
         "exp": expire,
         "iat": datetime.now(timezone.utc),
-        "type": "access"
+        "type": "access",
+        "jti": str(uuid.uuid4()) # token identifier for revocation if needed
+    })
+    return jwt.encode(to_encode, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+
+def create_refresh_token(data: dict) -> str:
+    """Create a long-lived refresh token."""
+    to_encode = data.copy()
+    expire = datetime.now(timezone.utc) + timedelta(days=7)
+    to_encode.update({
+        "exp": expire,
+        "iat": datetime.now(timezone.utc),
+        "type": "refresh",
+        "jti": str(uuid.uuid4())
     })
     return jwt.encode(to_encode, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
@@ -67,8 +89,11 @@ def create_token_for_user(username: str, role: str, user_id: str) -> dict:
         "permissions": get_user_permissions(role)
     }
     access_token = create_access_token(token_data)
+    refresh_token = create_refresh_token({"sub": username})
+    
     return {
         "access_token": access_token,
+        "refresh_token": refresh_token,
         "token_type": "Bearer",
         "expires_in": JWT_EXPIRY_HOURS * 3600,
         "role": role,

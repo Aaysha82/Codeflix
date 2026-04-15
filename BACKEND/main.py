@@ -47,6 +47,16 @@ async def lifespan(app: FastAPI):
     os.makedirs("REPORTS", exist_ok=True)
     os.makedirs("AUTH",    exist_ok=True)
 
+    # Database Initialization
+    try:
+        from BACKEND.database import init_db
+        from AUTH.auth import seed_default_users
+        init_db()
+        seed_default_users()
+        logger.success("PostgreSQL/SQLite database initialized and seeded")
+    except Exception as e:
+        logger.error(f"Database initialization failed: {e}")
+
     yield   # ← app is running
 
     logger.info("ProofSAR AI shutting down …")

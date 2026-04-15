@@ -1,118 +1,132 @@
 """
 AUTH/auth.py
-User management, registration, login with SQLite persistence
+User management with SQLAlchemy persistence
 """
-import os
-import json
 import uuid
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Optional, List
+from sqlalchemy.orm import Session
 from loguru import logger
+
 from AUTH.password_utils import hash_password, verify_password
 from AUTH.jwt_handler import create_token_for_user, decode_access_token
+from BACKEND.database import User, SessionLocal
 
-USERS_FILE = "AUTH/users.json"
+def _get_db():
+    db = SessionLocal()
+    try:
+        return db
+    finally:
+        db.close()
 
-
-def _load_users() -> dict:
-    """Load users from JSON store."""
-    if not os.path.exists(USERS_FILE):
-        # Seed default admin
-        default_users = {
-            "admin": {
-                "user_id": str(uuid.uuid4()),
-                "username": "admin",
-                "email": "admin@proofsar.ai",
-                "hashed_password": hash_password("Admin@2026"),
-                "role": "admin",
-                "is_active": True,
-                "created_at": datetime.now(timezone.utc).isoformat()
-            },
-            "analyst": {
-                "user_id": str(uuid.uuid4()),
-                "username": "analyst",
-                "email": "analyst@proofsar.ai",
-                "hashed_password": hash_password("Analyst@2026"),
-                "role": "analyst",
-                "is_active": True,
-                "created_at": datetime.now(timezone.utc).isoformat()
-            }
-        }
-        os.makedirs("AUTH", exist_ok=True)
-        with open(USERS_FILE, "w") as f:
-            json.dump(default_users, f, indent=2)
-        logger.info("Created default users: admin / analyst")
-        return default_users
-    with open(USERS_FILE, "r") as f:
-        return json.load(f)
-
-
-def _save_users(users: dict):
-    """Persist users to JSON store."""
-    with open(USERS_FILE, "w") as f:
-        json.dump(users, f, indent=2)
-
+def seed_default_users():
+    """Seed default users if the table is empty."""
+    db = SessionLocal()
+    try:
+        if db.query(User).count() == 0:
+            admin = User(
+                user_id=str(uuid.uuid4()),
+                username="admin",
+                email="admin@proofsar.ai",
+                hashed_password=hash_password("Admin@2026"),
+                role="admin",
+                is_active=True,
+                created_at=datetime.now(timezone.utc)
+            )
+            analyst = User(
+                user_id=str(uuid.uuid4()),
+                username="analyst",
+                email="analyst@proofsar.ai",
+                hashed_password=hash_password("Analyst@2026"),
+                role="analyst",
+                is_active=True,
+                created_at=datetime.now(timezone.utc)
+            )
+            db.add_all([admin, analyst])
+            db.commit()
+            logger.info("Database seeded with default users: admin, analyst")
+    finally:
+        db.close()
 
 def register_user(username: str, password: str, email: str, role: str = "analyst") -> dict:
-    """Register a new user. Role must be admin or analyst."""
-    users = _load_users()
-    if username in users:
-        raise ValueError(f"Username '{username}' already exists")
-    if role not in ["admin", "analyst"]:
-        raise ValueError("Role must be 'admin' or 'analyst'")
-    user = {
-        "user_id": str(uuid.uuid4()),
-        "username": username,
-        "email": email,
-        "hashed_password": hash_password(password),
-        "role": role,
-        "is_active": True,
-        "created_at": datetime.now(timezone.utc).isoformat()
-    }
-    users[username] = user
-    _save_users(users)
-    logger.info(f"Registered new user: {username} ({role})")
-    return {"message": "User registered successfully", "username": username, "role": role}
-
+    """Register a new user in the database."""
+    db = SessionLocal()
+    try:
+        db_user = db.query(User).filter(User.username == username).first()
+        if db_user:
+            raise ValueError(f"Username '{username}' already exists")
+        
+        if role not in ["admin", "analyst", "manager"]:
+            raise ValueError("Invalid role specified")
+            
+        user = User(
+            user_id=str(uuid.uuid4()),
+            username=username,
+            email=email,
+            hashed_password=hash_password(password),
+            role=role,
+            is_active=True,
+            created_at=datetime.now(timezone.utc)
+        )
+        db.add(user)
+        db.commit()
+        logger.info(f"Registered new user: {username} ({role})")
+        return {"username": username, "role": role, "status": "success"}
+    finally:
+        db.close()
 
 def login_user(username: str, password: str) -> dict:
-    """Authenticate user and return JWT token."""
-    users = _load_users()
-    user = users.get(username)
-    if not user:
-        raise ValueError("Invalid username or password")
-    if not user.get("is_active", True):
-        raise ValueError("Account is disabled")
-    if not verify_password(password, user["hashed_password"]):
-        raise ValueError("Invalid username or password")
-    token_response = create_token_for_user(username, user["role"], user["user_id"])
-    logger.info(f"User logged in: {username} ({user['role']})")
-    return token_response
-
+    """Authenticate user against database and return JWT."""
+    db = SessionLocal()
+    try:
+        user = db.query(User).filter(User.username == username).first()
+        if not user or not user.is_active:
+            raise ValueError("Invalid username or deactivated account")
+        
+        if not verify_password(password, user.hashed_password):
+            raise ValueError("Invalid password")
+            
+        token_response = create_token_for_user(username, user.role, user.user_id)
+        return token_response
+    finally:
+        db.close()
 
 def get_current_user(token: str) -> Optional[dict]:
-    """Decode token and return current user info."""
+    """Validate token and return user data from DB."""
     payload = decode_access_token(token)
     if not payload:
         return None
-    users = _load_users()
-    username = payload.get("sub")
-    user = users.get(username)
-    if not user or not user.get("is_active", True):
-        return None
-    return {
-        "user_id": user["user_id"],
-        "username": user["username"],
-        "email": user["email"],
-        "role": user["role"],
-        "permissions": payload.get("permissions", [])
-    }
+        
+    db = SessionLocal()
+    try:
+        username = payload.get("sub")
+        user = db.query(User).filter(User.username == username).first()
+        if not user or not user.is_active:
+            return None
+            
+        return {
+            "user_id": user.user_id,
+            "username": user.username,
+            "email": user.email,
+            "role": user.role,
+            "permissions": payload.get("permissions", [])
+        }
+    finally:
+        db.close()
 
-
-def list_users() -> list:
-    """List all users (admin only)."""
-    users = _load_users()
-    return [
-        {k: v for k, v in u.items() if k != "hashed_password"}
-        for u in users.values()
-    ]
+def list_users() -> List[dict]:
+    """Return all users for admin dashboard."""
+    db = SessionLocal()
+    try:
+        users = db.query(User).all()
+        return [
+            {
+                "username": u.username,
+                "email": u.email,
+                "role": u.role,
+                "is_active": u.is_active,
+                "created_at": u.created_at.isoformat()
+            } for u in users
+        ]
+    finally:
+        db.close()

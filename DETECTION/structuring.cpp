@@ -12,6 +12,10 @@ Run:     DETECTION/detector <json_input>
 #include <cmath>
 #include <cstdlib>
 
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
+
 // ============================================================
 // BASE CLASS: Transaction
 // ============================================================
@@ -27,14 +31,16 @@ protected:
     int is_weekend;
 
 public:
-    Transaction(
-        const std::string& tid, const std::string& acc,
-        double amt, const std::string& loc,
-        const std::string& ch, const std::string& cur,
-        int hr, int weekend
-    ) : transaction_id(tid), account_id(acc), amount(amt),
-        location(loc), channel(ch), currency(cur),
-        hour(hr), is_weekend(weekend) {}
+    Transaction(const json& j) {
+        transaction_id = j.value("transaction_id", "txn_000");
+        account_id     = j.value("account_id", "acc_000");
+        amount         = j.value("amount", 0.0);
+        location       = j.value("location", "Mumbai");
+        channel        = j.value("channel", "Online");
+        currency       = j.value("currency", "INR");
+        hour           = j.value("hour", 12);
+        is_weekend     = j.value("is_weekend", 0);
+    }
 
     virtual ~Transaction() = default;
 
@@ -47,8 +53,6 @@ public:
     std::string getTxnId() const { return transaction_id; }
     int getHour() const { return hour; }
     int getIsWeekend() const { return is_weekend; }
-
-    virtual std::string getType() const { return "base"; }
 };
 
 // ============================================================
@@ -65,28 +69,22 @@ public:
 
 // ============================================================
 // RULE 1: Structuring Detection
-// Structuring: transactions just below 10 lakh reporting threshold
 // ============================================================
 class StructuringDetector : public RuleDetector {
 private:
-    static constexpr double THRESHOLD = 1000000.0; // INR 10 lakh
+    static constexpr double THRESHOLD = 1000000.0;
     static constexpr double LOWER_BOUND_RATIO = 0.80;
     static constexpr double UPPER_BOUND_RATIO = 0.99;
 
 public:
     bool detect(const Transaction& txn) const override {
         double amt = txn.getAmount();
-        double lower = THRESHOLD * LOWER_BOUND_RATIO;
-        double upper = THRESHOLD * UPPER_BOUND_RATIO;
-        return (amt >= lower && amt <= upper);
+        return (amt >= THRESHOLD * LOWER_BOUND_RATIO && amt <= THRESHOLD * UPPER_BOUND_RATIO);
     }
 
     double getRiskScore(const Transaction& txn) const override {
         if (!detect(txn)) return 0.0;
-        double amt = txn.getAmount();
-        double ratio = amt / THRESHOLD;
-        // Closer to threshold = higher risk (0.65–0.95 range)
-        return 0.65 + (ratio - 0.80) / 0.20 * 0.30;
+        return 0.65 + (txn.getAmount() / THRESHOLD - 0.80) / 0.20 * 0.30;
     }
 
     std::string getRuleName() const override { return "STRUCTURING"; }
@@ -95,7 +93,7 @@ public:
         if (!detect(txn)) return "";
         char buf[256];
         snprintf(buf, sizeof(buf),
-            "Transaction amount INR %.2f is %.1f%% of the 10L reporting threshold — classic structuring pattern",
+            "Amount INR %.2f is %.1f%% of the 10L threshold (Structuring)",
             txn.getAmount(), (txn.getAmount() / THRESHOLD) * 100.0
         );
         return std::string(buf);
@@ -104,246 +102,105 @@ public:
 
 // ============================================================
 // RULE 2: Layering Detection
-// Layering: large amounts to high-risk jurisdictions via wire
 // ============================================================
 class LayeringDetector : public RuleDetector {
 private:
     static constexpr double HIGH_VALUE_THRESHOLD = 500000.0;
-    const std::vector<std::string> HIGH_RISK_LOCATIONS = {
-        "Cayman Islands", "Panama", "Switzerland", "Dubai",
-        "British Virgin Islands", "Malta", "Isle of Man"
-    };
-    const std::vector<std::string> HIGH_RISK_CHANNELS = {
-        "Wire Transfer", "RTGS", "SWIFT"
-    };
-    const std::vector<std::string> FOREIGN_CURRENCIES = {
-        "USD", "EUR", "CHF", "AED", "GBP", "SGD"
-    };
+    const std::vector<std::string> HR_LOCS = {"Cayman Islands", "Panama", "Dubai", "Switzerland"};
+    const std::vector<std::string> HR_CHANS = {"Wire Transfer", "RTGS", "SWIFT"};
 
-    bool isHighRiskLocation(const std::string& loc) const {
-        return std::find(HIGH_RISK_LOCATIONS.begin(), HIGH_RISK_LOCATIONS.end(), loc)
-               != HIGH_RISK_LOCATIONS.end();
-    }
-
-    bool isHighRiskChannel(const std::string& ch) const {
-        return std::find(HIGH_RISK_CHANNELS.begin(), HIGH_RISK_CHANNELS.end(), ch)
-               != HIGH_RISK_CHANNELS.end();
-    }
-
-    bool isForeignCurrency(const std::string& cur) const {
-        return std::find(FOREIGN_CURRENCIES.begin(), FOREIGN_CURRENCIES.end(), cur)
-               != FOREIGN_CURRENCIES.end();
+    bool isHR(const std::vector<std::string>& list, const std::string& val) const {
+        return std::find(list.begin(), list.end(), val) != list.end();
     }
 
 public:
     bool detect(const Transaction& txn) const override {
-        bool highVal = txn.getAmount() >= HIGH_VALUE_THRESHOLD;
-        bool highRiskLoc = isHighRiskLocation(txn.getLocation());
-        bool highRiskCh = isHighRiskChannel(txn.getChannel());
-        bool foreignCur = isForeignCurrency(txn.getCurrency());
-
-        // Flag if 2+ layering indicators present
-        int score = (int)highVal + (int)highRiskLoc + (int)highRiskCh + (int)foreignCur;
-        return score >= 2;
+        int hits = (txn.getAmount() >= HIGH_VALUE_THRESHOLD) +
+                   isHR(HR_LOCS, txn.getLocation()) +
+                   isHR(HR_CHANS, txn.getChannel());
+        return hits >= 2;
     }
 
     double getRiskScore(const Transaction& txn) const override {
         if (!detect(txn)) return 0.0;
-        bool highVal = txn.getAmount() >= HIGH_VALUE_THRESHOLD;
-        bool highRiskLoc = isHighRiskLocation(txn.getLocation());
-        bool highRiskCh = isHighRiskChannel(txn.getChannel());
-        bool foreignCur = isForeignCurrency(txn.getCurrency());
-        int indicators = (int)highVal + (int)highRiskLoc + (int)highRiskCh + (int)foreignCur;
-        // 2 indicators = 0.70, 3 = 0.82, 4 = 0.95
-        return std::min(0.95, 0.55 + indicators * 0.10);
+        return std::min(0.95, 0.60 + (txn.getAmount() >= HIGH_VALUE_THRESHOLD ? 0.35 : 0.15));
     }
 
     std::string getRuleName() const override { return "LAYERING"; }
-
     std::string getExplanation(const Transaction& txn) const override {
-        if (!detect(txn)) return "";
-        return "High-value transaction via wire transfer to high-risk jurisdiction — "
-               "matches layering pattern for money laundering";
+        return "High-value cross-border layering indicators detected.";
     }
 };
 
 // ============================================================
 // RULE 3: Smurfing Detection
-// Smurfing: rapid small transactions from multiple sources
 // ============================================================
 class SmurfingDetector : public RuleDetector {
-private:
-    static constexpr double SMALL_TXN_MAX = 50000.0;
-    static constexpr double SMALL_TXN_MIN = 1000.0;
-    static constexpr int ODD_HOUR_START = 0;
-    static constexpr int ODD_HOUR_END = 5;
-
-    bool isOddHour(int hour) const {
-        return (hour >= ODD_HOUR_START && hour <= ODD_HOUR_END);
-    }
-
 public:
     bool detect(const Transaction& txn) const override {
-        bool smallAmt = (txn.getAmount() >= SMALL_TXN_MIN && txn.getAmount() <= SMALL_TXN_MAX);
-        bool oddHour = isOddHour(txn.getHour());
-        bool weekend = txn.getIsWeekend() == 1;
-        // Small amounts at odd hours or weekends suggest smurfing
-        return smallAmt && (oddHour || weekend);
+        return (txn.getAmount() >= 1000 && txn.getAmount() <= 50000) &&
+               (txn.getHour() < 5 || txn.getIsWeekend());
     }
-
     double getRiskScore(const Transaction& txn) const override {
-        if (!detect(txn)) return 0.0;
-        double base = 0.60;
-        if (isOddHour(txn.getHour())) base += 0.10;
-        if (txn.getIsWeekend() == 1) base += 0.05;
-        return std::min(base, 0.90);
+        return detect(txn) ? 0.75 : 0.0;
     }
-
     std::string getRuleName() const override { return "SMURFING"; }
-
     std::string getExplanation(const Transaction& txn) const override {
-        if (!detect(txn)) return "";
-        char buf[256];
-        snprintf(buf, sizeof(buf),
-            "Small transaction of INR %.2f at hour %d — consistent with smurfing/structuring pattern",
-            txn.getAmount(), txn.getHour()
-        );
-        return std::string(buf);
+        return "Anomalous small transaction timing suggests smurfing.";
     }
 };
 
 // ============================================================
-// COMPOSITE: AML Detection Engine
-// Polymorphic — runs all rules
+// ENGINE
 // ============================================================
 class AMLDetectionEngine {
 private:
     std::vector<RuleDetector*> rules;
-
 public:
     AMLDetectionEngine() {
         rules.push_back(new StructuringDetector());
         rules.push_back(new LayeringDetector());
         rules.push_back(new SmurfingDetector());
     }
+    ~AMLDetectionEngine() { for (auto* r : rules) delete r; }
 
-    ~AMLDetectionEngine() {
-        for (auto* r : rules) delete r;
-    }
-
-    struct DetectionResult {
-        bool is_flagged;
-        double max_risk_score;
-        std::vector<std::string> triggered_rules;
-        std::vector<std::string> explanations;
-    };
-
-    DetectionResult analyze(const Transaction& txn) const {
-        DetectionResult result;
-        result.is_flagged = false;
-        result.max_risk_score = 0.0;
+    json analyze(const Transaction& txn) const {
+        json res;
+        res["is_flagged"] = false;
+        res["risk_score"] = 0.0;
+        res["triggered_rules"] = json::array();
+        res["explanations"] = json::array();
 
         for (const auto* rule : rules) {
             if (rule->detect(txn)) {
-                result.is_flagged = true;
+                res["is_flagged"] = true;
                 double score = rule->getRiskScore(txn);
-                if (score > result.max_risk_score) result.max_risk_score = score;
-                result.triggered_rules.push_back(rule->getRuleName());
-                result.explanations.push_back(rule->getExplanation(txn));
+                if (score > res["risk_score"]) res["risk_score"] = score;
+                res["triggered_rules"].push_back(rule->getRuleName());
+                res["explanations"].push_back(rule->getExplanation(txn));
             }
         }
-        return result;
+        return res;
     }
 };
 
-// ============================================================
-// JSON HELPERS
-// ============================================================
-std::string jsonEscape(const std::string& s) {
-    std::string out;
-    for (char c : s) {
-        if (c == '"') out += "\\\"";
-        else if (c == '\\') out += "\\\\";
-        else if (c == '\n') out += "\\n";
-        else out += c;
-    }
-    return out;
-}
-
-std::string extractJsonString(const std::string& json, const std::string& key) {
-    std::string search = "\"" + key + "\"";
-    size_t pos = json.find(search);
-    if (pos == std::string::npos) return "";
-    pos = json.find("\"", pos + search.size() + 1);
-    if (pos == std::string::npos) return "";
-    size_t end = json.find("\"", pos + 1);
-    while (end != std::string::npos && json[end - 1] == '\\') end = json.find("\"", end + 1);
-    if (end == std::string::npos) return "";
-    return json.substr(pos + 1, end - pos - 1);
-}
-
-double extractJsonDouble(const std::string& json, const std::string& key) {
-    std::string search = "\"" + key + "\"";
-    size_t pos = json.find(search);
-    if (pos == std::string::npos) return 0.0;
-    pos = json.find(":", pos + search.size());
-    if (pos == std::string::npos) return 0.0;
-    pos++;
-    while (pos < json.size() && (json[pos] == ' ' || json[pos] == '\t')) pos++;
-    return std::stod(json.substr(pos));
-}
-
-int extractJsonInt(const std::string& json, const std::string& key) {
-    return (int)extractJsonDouble(json, key);
-}
-
-// ============================================================
-// MAIN ENTRY POINT
-// Input: JSON string as first argument
-// Output: JSON result to stdout
-// ============================================================
 int main(int argc, char* argv[]) {
-    std::string input;
-    if (argc > 1) {
-        input = argv[1];
-    } else {
-        // Read from stdin
-        std::getline(std::cin, input);
+    try {
+        std::string input;
+        if (argc > 1) input = argv[1];
+        else std::getline(std::cin, input);
+
+        json j = json::parse(input);
+        Transaction txn(j);
+        AMLDetectionEngine engine;
+        
+        std::cout << engine.analyze(txn).dump() << std::endl;
+    } catch (const std::exception& e) {
+        json err;
+        err["error"] = e.what();
+        err["is_flagged"] = false;
+        err["risk_score"] = 0.0;
+        std::cout << err.dump() << std::endl;
     }
-
-    // Parse input JSON
-    std::string tid = extractJsonString(input, "transaction_id");
-    std::string acc = extractJsonString(input, "account_id");
-    double amount = extractJsonDouble(input, "amount");
-    std::string loc = extractJsonString(input, "location");
-    std::string ch = extractJsonString(input, "channel");
-    std::string cur = extractJsonString(input, "currency");
-    int hr = extractJsonInt(input, "hour");
-    int weekend = extractJsonInt(input, "is_weekend");
-
-    Transaction txn(tid, acc, amount, loc, ch, cur, hr, weekend);
-    AMLDetectionEngine engine;
-    auto result = engine.analyze(txn);
-
-    // Build JSON output
-    std::ostringstream out;
-    out << "{";
-    out << "\"is_flagged\":" << (result.is_flagged ? "true" : "false") << ",";
-    out << "\"risk_score\":" << result.max_risk_score << ",";
-    out << "\"triggered_rules\":[";
-    for (size_t i = 0; i < result.triggered_rules.size(); i++) {
-        out << "\"" << jsonEscape(result.triggered_rules[i]) << "\"";
-        if (i + 1 < result.triggered_rules.size()) out << ",";
-    }
-    out << "],";
-    out << "\"explanations\":[";
-    for (size_t i = 0; i < result.explanations.size(); i++) {
-        out << "\"" << jsonEscape(result.explanations[i]) << "\"";
-        if (i + 1 < result.explanations.size()) out << ",";
-    }
-    out << "]";
-    out << "}";
-
-    std::cout << out.str() << std::endl;
     return 0;
 }

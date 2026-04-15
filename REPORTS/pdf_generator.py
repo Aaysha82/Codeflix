@@ -72,11 +72,11 @@ def _header_table(verdict: dict, styles: dict) -> Table:
     sar_id    = f"SAR-{datetime.now().strftime('%Y%m%d')}-{txn_id[:8].upper()}"
 
     data = [[
-        Paragraph("PROOFSAR AI", styles["title"]),
+        Paragraph("PROOFSAR AI — REGULATORY COMPLIANCE", styles["title"]),
         Paragraph("", styles["title"]),
     ], [
-        Paragraph("Suspicious Activity Report — Confidential", styles["subtitle"]),
-        Paragraph(f"SAR ID: {sar_id}", styles["subtitle"]),
+        Paragraph("Suspicious Transaction Report (STR) — Form 102 (India)", styles["subtitle"]),
+        Paragraph(f"FIU-IND REF: {sar_id}", styles["subtitle"]),
     ]]
     t = Table(data, colWidths=["60%", "40%"])
     t.setStyle(TableStyle([
@@ -110,9 +110,10 @@ def _info_table(verdict: dict, styles: dict) -> Table:
         ["Amount",           f"INR {amount:,.2f}"],
         ["Channel",          channel],
         ["Location",         location],
-        ["Report Date",      today],
+        ["Date of Detection", today],
         ["Risk Score",       f"{risk_sc:.2%}"],
         ["Risk Level",       risk_lvl],
+        ["Reporting Entity", "ProofSAR Digital Assets Ltd. (FIN-99238)"],
     ]
 
     table_data = []
@@ -316,6 +317,18 @@ def generate_pdf(
         ("LEFTPADDING",(0,0),(-1,-1), 8),
     ]))
     story.append(at)
+    story.append(Spacer(1, 24))
+
+    # ── Sign-off ────────────────────────────────────────────────────────────
+    story.append(Paragraph("SECTION 6 — AUTHORIZATION", styles["section"]))
+    story.append(HRFlowable(width="100%", thickness=1, color=C_ACCENT))
+    story.append(Spacer(1, 12))
+    sig_data = [[
+        Paragraph("__________________________<br/>Principal Officer Signature", styles["body"]),
+        Paragraph(f"Date: {datetime.now().strftime('%Y-%m-%d')}<br/>Place: Mumbai, India", styles["body"])
+    ]]
+    st_sig = Table(sig_data, colWidths=["60%", "40%"])
+    story.append(st_sig)
     story.append(Spacer(1, 20))
 
     # ── Footer ──────────────────────────────────────────────────────────────

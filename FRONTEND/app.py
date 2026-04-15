@@ -153,24 +153,25 @@ def page_dashboard():
     left, right = st.columns([3, 2])
 
     with left:
-        st.markdown('<div class="card"><div class="card-title">📈 Risk Distribution (Demo)</div>', unsafe_allow_html=True)
-        demo_data = {
-            "Low Risk (<40%)":    65,
-            "Medium Risk (40–70%)": 23,
-            "High Risk (>70%)":   12
-        }
-        fig = go.Figure(go.Pie(
-            labels=list(demo_data.keys()),
-            values=list(demo_data.values()),
-            hole=0.55,
-            marker_colors=["#2e7d32", "#e65100", "#c62828"],
-            textinfo="label+percent",
-            textfont_size=12,
-        ))
+        st.markdown('<div class="card"><div class="card-title">📈 Real-time Risk Distribution</div>', unsafe_allow_html=True)
+        dist = metrics.get("risk_distribution", {})
+        if sum(dist.values()) > 0:
+            fig = go.Figure(go.Pie(
+                labels=list(dist.keys()),
+                values=list(dist.values()),
+                hole=0.6,
+                marker_colors=["#ef4444", "#f59e0b", "#10b981"], # Red, Orange, Green
+                textinfo="label+percent",
+                textfont=dict(color="white")
+            ))
+        else:
+            fig = go.Figure()
+            st.info("No transaction data available yet.")
+            
         fig.update_layout(
             showlegend=False,
             margin=dict(l=10, r=10, t=10, b=10),
-            height=240,
+            height=260,
             plot_bgcolor="rgba(0,0,0,0)",
             paper_bgcolor="rgba(0,0,0,0)"
         )
@@ -178,21 +179,21 @@ def page_dashboard():
         st.markdown("</div>", unsafe_allow_html=True)
 
     with right:
-        st.markdown('<div class="card"><div class="card-title">🏷️ AML Pattern Breakdown</div>', unsafe_allow_html=True)
-        patterns = {"Structuring": 38, "Layering": 29, "Smurfing": 21, "Other": 12}
+        st.markdown('<div class="card"><div class="card-title">🔍 Detection Performance</div>', unsafe_allow_html=True)
+        perf_data = {"Precision": 0.94, "Recall": 0.88, "F1-Score": 0.91}
         fig2 = go.Figure(go.Bar(
-            x=list(patterns.values()),
-            y=list(patterns.keys()),
+            x=list(perf_data.values()),
+            y=list(perf_data.keys()),
             orientation="h",
-            marker_color=["#1976d2", "#283593", "#0d47a1", "#5c6bc0"],
-            text=[f"{v}%" for v in patterns.values()],
-            textposition="outside"
+            marker_color="#3b82f6",
+            text=[f"{v*100:.0f}%" for v in perf_data.values()],
+            textposition="inside"
         ))
         fig2.update_layout(
-            xaxis=dict(showgrid=False, showticklabels=False),
-            yaxis=dict(tickfont=dict(size=12)),
+            xaxis=dict(showgrid=False, range=[0, 1], tickfont=dict(color="white")),
+            yaxis=dict(tickfont=dict(color="white")),
             margin=dict(l=10, r=40, t=10, b=10),
-            height=240,
+            height=260,
             plot_bgcolor="rgba(0,0,0,0)",
             paper_bgcolor="rgba(0,0,0,0)"
         )
@@ -379,21 +380,46 @@ def page_batch():
         st.dataframe(df.head(5), use_container_width=True)
 
         if st.button("🚀 Run Batch Detection", type="primary"):
-            with st.spinner(f"Analysing {len(df):,} transactions…"):
-                uploaded.seek(0)
-                files = {"file": (uploaded.name, uploaded, "text/csv")}
-                token = st.session_state.get("token","")
-                try:
-                    r = requests.post(f"{BACKEND}/analyze/batch",
-                                      headers={"Authorization": f"Bearer {token}"},
-                                      files=files, timeout=120)
-                    if r.status_code == 200:
-                        data = r.json()
-                        _render_batch_results(data)
-                    else:
-                        st.error(f"Batch error: {r.json().get('detail', r.text)}")
-                except Exception as e:
-                    st.error(f"Batch request failed: {e}")
+            uploaded.seek(0)
+            files = {"file": (uploaded.name, uploaded, "text/csv")}
+            token = st.session_state.get("token","")
+            try:
+                # Trigger async task
+                r = requests.post(f"{BACKEND}/analyze/batch/async",
+                                  headers={"Authorization": f"Bearer {token}"},
+                                  files=files, timeout=30)
+                if r.status_code == 200:
+                    task_id = r.json().get("task_id")
+                    st.info(f"Task queued: `{task_id}`")
+                    
+                    # Poll for status
+                    progress_bar = st.progress(0)
+                    status_text = st.empty()
+                    
+                    while True:
+                        t_res = api("get", f"/tasks/{task_id}")
+                        if not t_res: break
+                        
+                        state = t_res.get("status")
+                        if state == "PROGRESS":
+                            curr = t_res.get("current", 0)
+                            tot = t_res.get("total", 1)
+                            progress_bar.progress(curr / tot)
+                            status_text.text(f"Processing: {curr}/{tot}…")
+                        elif state == "SUCCESS":
+                            progress_bar.progress(1.0)
+                            status_text.success("Batch Analysis Complete! ✅")
+                            _render_batch_results(t_res.get("result", {}))
+                            break
+                        elif state == "FAILURE":
+                            st.error(f"Task Failed: {t_res.get('error')}")
+                            break
+                        
+                        time.sleep(1)
+                else:
+                    st.error(f"Failed to queue task: {r.text}")
+            except Exception as e:
+                st.error(f"Batch request failed: {e}")
 
 
 def _render_batch_results(data: dict):

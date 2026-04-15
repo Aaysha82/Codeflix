@@ -26,6 +26,8 @@ from sklearn.impute import SimpleImputer
 from xgboost import XGBClassifier
 from imblearn.over_sampling import SMOTE
 from imblearn.pipeline import Pipeline as ImbPipeline
+from sklearn.calibration import CalibratedClassifierCV
+from ML.mlflow_tracker import start_run, log_metrics, log_params, log_model
 
 warnings.filterwarnings("ignore")
 
@@ -101,7 +103,14 @@ def build_models():
         C=0.5,
         random_state=42
     )
-    return {"RandomForest": rf, "XGBoost": xgb, "LogisticRegression": lr}
+
+    models = {"RandomForest": rf, "XGBoost": xgb, "LogisticRegression": lr}
+    calibrated_models = {}
+    for name, model in models.items():
+        # Using Isotonic calibration for smoother probability distribution
+        calibrated_models[name] = CalibratedClassifierCV(model, method="isotonic", cv=3)
+        
+    return calibrated_models
 
 
 def train_and_evaluate(X, y):
@@ -134,35 +143,45 @@ def train_and_evaluate(X, y):
     best_model = None
     best_auc = 0.0
 
-    for name, model in models.items():
-        logger.info(f"Training {name}...")
-        if name == "XGBoost":
+    with start_run() as run:
+        log_params({"minority_count": int(minority_count), "smote_k": int(k_neighbors)})
+        
+        for name, model in models.items():
+            logger.info(f"Training {name} (Calibrated)...")
             model.fit(X_res, y_res)
-        else:
-            model.fit(X_res, y_res)
 
-        y_prob = model.predict_proba(X_test_sc)[:, 1]
-        y_pred = model.predict(X_test_sc)
+            y_prob = model.predict_proba(X_test_sc)[:, 1]
+            y_pred = model.predict(X_test_sc)
 
-        auc = roc_auc_score(y_test, y_prob)
-        prec = precision_score(y_test, y_pred, zero_division=0)
-        rec = recall_score(y_test, y_pred, zero_division=0)
-        f1 = f1_score(y_test, y_pred, zero_division=0)
+            auc = roc_auc_score(y_test, y_prob)
+            prec = precision_score(y_test, y_pred, zero_division=0)
+            rec = recall_score(y_test, y_pred, zero_division=0)
+            f1 = f1_score(y_test, y_pred, zero_division=0)
 
-        results[name] = {
-            "auc": round(auc, 4),
-            "precision": round(prec, 4),
-            "recall": round(rec, 4),
-            "f1": round(f1, 4),
-            "confusion_matrix": confusion_matrix(y_test, y_pred).tolist()
-        }
-        logger.info(f"{name}: AUC={auc:.4f} | P={prec:.4f} | R={rec:.4f} | F1={f1:.4f}")
+            results[name] = {
+                "auc": round(auc, 4),
+                "precision": round(prec, 4),
+                "recall": round(rec, 4),
+                "f1": round(f1, 4),
+                "confusion_matrix": confusion_matrix(y_test, y_pred).tolist()
+            }
+            logger.info(f"{name}: AUC={auc:.4f} | P={prec:.4f} | R={rec:.4f} | F1={f1:.4f}")
 
-        if auc > best_auc:
-            best_auc = auc
-            best_model = (name, model)
+            # Log to MLflow
+            log_metrics({
+                f"{name}_auc": auc,
+                f"{name}_precision": prec,
+                f"{name}_recall": rec,
+                f"{name}_f1": f1
+            })
 
-    logger.info(f"\nBest Model: {best_model[0]} with AUC={best_auc:.4f}")
+            if auc > best_auc:
+                best_auc = auc
+                best_model = (name, model)
+
+        log_model(best_model[1], artifact_path="best_model")
+        logger.info(f"\nBest Model: {best_model[0]} with AUC={best_auc:.4f}")
+        
     return best_model, scaler, imputer, results, X_test_sc, y_test
 
 

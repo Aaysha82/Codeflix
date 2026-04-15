@@ -19,6 +19,11 @@ REPORTS/*.png
 REPORTS/*.pdf
 DETECTION/detector
 DETECTION/detector.exe
+*.db
+BACKEND/*.db
+mlruns/
+mlflow.db
+*.log
 
 # IDEs
 .vscode/

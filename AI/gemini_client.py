@@ -51,34 +51,40 @@ def _build_sar_prompt(verdict: dict) -> str:
         legal_str += f"  • {v['act']} {v['section']}: {v['description']}\n"
 
     return textwrap.dedent(f"""
-    You are a senior AML Compliance Officer and expert SAR writer at a major Indian bank.
-    Generate a professional, regulator-ready Suspicious Activity Report (SAR) narrative 
-    based on the following transaction assessment. Write in formal banking compliance language.
+    You are a senior AML Compliance Officer and official SAR/STR writer at a leading bank in India.
+    Generate a professional, regulator-ready Suspicious Transaction Report (STR) narrative (Form 102) 
+    for submission to FIU-IND based on the following automated assessment.
 
-    --- TRANSACTION DETAILS ---
-    Transaction ID : {txn_id}
-    Account ID     : {account}
-    Amount         : INR {float(amount):,.2f}
-    Channel/Method : {channel}
-    Jurisdiction   : {location}
+    --- STR DATA INPUTS ---
+    Reference ID     : {txn_id}
+    Account Number   : {account}
+    Amount           : INR {float(amount):,.2f}
+    Channel/Method   : {channel}
+    Branch Location  : {location}
+    Detection Date   : {datetime.now().strftime('%Y-%m-%d')}
     
     --- RISK DETECTION RESULTS ---
-    Risk Score     : {float(risk):.2%} ({risk_lvl} Risk)
-    Rules Triggered: {rules}
-    Primary Risk Factors:
-    {reasons if reasons else '  - Anomalous activity deviating from profile'}
+    Calculated Risk  : {float(risk):.2%} ({risk_lvl} Severity)
+    AML Rules Hit    : {rules}
+    Top SHAP Insights:
+    {reasons if reasons else '  - Non-typical transaction behavior for account profile'}
 
-    --- LEGAL GROUNDS ---
-    {legal_str if legal_str else '  - Suspicion under PMLA Section 12A'}
+    --- REGULATORY GROUNDS ---
+    {legal_str if legal_str else '  - Suspicion under PMLA 2002 Section 12(1)'}
     
-    --- NARRATIVE REQUIREMENTS ---
-    Your report MUST cover:
-    1. SUMMARY OF SUSPICION: Why is this being reported? (Focus on {rules if rules != 'None' else 'anomaly'})
-    2. PATTERN ANALYSIS: How does this amount/method fit money laundering patterns like Structuring or Layering?
-    3. LEGAL JUSTIFICATION: Explicitly mention the relevant sections of PMLA 2002.
-    4. CONCLUSION: Final compliance recommendation.
+    --- STR NARRATIVE STRUCTURE (REQUIRED) ---
+    Your report MUST use the following formal sections:
+    1. GROUNDS FOR SUSPICION: Provide a concise technical justification for why this transaction is flagged. 
+       Highlight specific anomalies (e.g., structuring, layering, or smurfing) relative to PMLA 2002 guidelines.
+    2. ACCOUNT PROFILE DEVIATION: Describe how this transaction differs from the account's historical behavior 
+       (mentioning the {float(amount):,.2f} INR value specifically).
+    3. DETAILED NARRATIVE: Provide a 1-2 paragraph description of the activity suitable for FIU-IND audit. 
+       Avoid technical jargon where possible, focus on the suspicious logic.
+    4. CONCLUSION & RECOMMENDATION: Final sign-off by Compliance.
 
-    Maintain a serious, professional, and objective tone. Keep it under 350 words.
+    Tone: Formal, objective, authoritative, and strictly professional.
+    Language: Standard English (Indian Banking dialect).
+    Length: 200-400 words.
     """).strip()
 
 

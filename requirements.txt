@@ -20,6 +20,8 @@ numpy>=2.0.0
 joblib>=1.4.0
 faker>=24.11.0
 imbalanced-learn>=0.12.2
+mlflow>=2.13.0
+
 
 # Explainability
 shap>=0.45.1
@@ -49,6 +51,14 @@ python-dotenv>=1.0.1
 # Testing
 pytest>=8.2.0
 pytest-asyncio>=0.23.6
+
+# Database & Ops
+sqlalchemy>=2.0.30
+psycopg2-binary>=2.9.9
+celery>=5.4.0
+redis>=5.0.4
+psutil>=5.9.8
+
 
 # Logging
 loguru>=0.7.2

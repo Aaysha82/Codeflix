@@ -209,6 +209,36 @@ def analyze(txn: TransactionInput, user: dict = Depends(current_user)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.post("/analyze/batch/async", tags=["Analysis"])
+async def batch_analysis_async(file: UploadFile = File(...), user: dict = Depends(require_permission("write"))):
+    """Trigger an asynchronous batch analysis task."""
+    try:
+        df = pd.read_csv(file.file)
+        txns = df.to_dict(orient="records")
+        from BACKEND.tasks import process_batch_transactions
+        task = process_batch_transactions.delay(txns)
+        return {"task_id": task.id, "status": "QUEUED"}
+    except Exception as e:
+        logger.error(f"Async batch trigger error: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.get("/tasks/{task_id}", tags=["Tasks"])
+async def get_task_status(task_id: str, _: dict = Depends(current_user)):
+    """Check status and progress of a background task."""
+    from BACKEND.celery_app import celery_app
+    res = celery_app.AsyncResult(task_id)
+    state = res.state
+    response = {"task_id": task_id, "status": state}
+    
+    if state == 'PROGRESS':
+        response.update(res.info)
+    elif state == 'SUCCESS':
+        response.update({"result": res.get()})
+    elif state == 'FAILURE':
+        response.update({"error": str(res.info)})
+        
+    return response
+
 @router.post("/analyze/batch", tags=["Analysis"])
 async def analyze_batch(
     file: UploadFile = File(...),
@@ -327,13 +357,27 @@ def health():
 
 
 @router.get("/metrics", tags=["System"])
-def metrics(_: dict = Depends(current_user)):
-    """High-level system metrics."""
-    events = get_recent_events(1000)
+def metrics(db: Session = Depends(_get_db), _: dict = Depends(current_user)):
+    """High-level system metrics with risk distribution."""
+    from BACKEND.database import TransactionRecord, AuditEvent
+    
+    total_analyses = db.query(TransactionRecord).count()
+    total_sars = db.query(AuditEvent).filter(AuditEvent.event_type == "SAR_GENERATED").count()
+    total_alerts = db.query(AuditEvent).filter(AuditEvent.event_type == "ALERT_SENT").count()
+    
+    # Calculate risk distribution
+    high = db.query(TransactionRecord).filter(TransactionRecord.risk_level == "HIGH").count()
+    med = db.query(TransactionRecord).filter(TransactionRecord.risk_level == "MEDIUM").count()
+    low = db.query(TransactionRecord).filter(TransactionRecord.risk_level == "LOW").count()
+    
     return {
-        "total_analyses":  sum(1 for e in events if e["event_type"] == "TRANSACTION_ANALYZED"),
-        "total_sars":      sum(1 for e in events if e["event_type"] == "SAR_GENERATED"),
-        "total_alerts":    sum(1 for e in events if e["event_type"] == "ALERT_SENT"),
+        "total_analyses":  total_analyses,
+        "total_sars":      total_sars,
+        "total_alerts":    total_alerts,
         "chain_integrity": verify_chain()["valid"],
-        "total_events":    len(events)
+        "risk_distribution": {
+            "High Risk": high,
+            "Medium Risk": med,
+            "Low Risk": low
+        }
     }

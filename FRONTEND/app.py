@@ -55,11 +55,12 @@ def api(method: str, path: str, **kwargs) -> dict | None:
 
 
 def risk_badge(level: str) -> str:
-    colors = {"HIGH": "#c62828", "MEDIUM": "#e65100", "LOW": "#2e7d32"}
+    # High contrast colors for visibility
+    colors = {"HIGH": "#b71c1c", "MEDIUM": "#bf360c", "LOW": "#1b5e20"}
     bg     = {"HIGH": "#ffebee", "MEDIUM": "#fff3e0", "LOW": "#e8f5e9"}
-    c = colors.get(level, "#555")
-    b = bg.get(level, "#f5f5f5")
-    return f'<span class="badge" style="background:{b};color:{c};border:1px solid {c}22">{level}</span>'
+    c = colors.get(level, "#1e293b")
+    b = bg.get(level, "#f8fafc")
+    return f'<span class="badge" style="background:{b};color:{c};border:1px solid {c}">{level}</span>'
 
 
 def risk_bar(score: float, level: str) -> str:
@@ -88,9 +89,8 @@ def page_login():
     with col:
         st.markdown("""
         <div style="text-align:center;padding:40px 0 16px">
-          <div style="font-size:60px">🛡️</div>
           <h2 style="font-size:24px;font-weight:700;color:#1a237e;margin:8px 0 4px">ProofSAR AI</h2>
-          <p style="color:#6b7280;font-size:13px">Explainable AML & SAR Generation Platform</p>
+          <p style="color:#475569;font-size:14px;font-weight:500">Explainable AML & SAR Generation Platform</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -115,8 +115,8 @@ def page_login():
                 st.rerun()
 
         st.markdown("""
-        <div style="text-align:center;margin-top:16px;font-size:12px;color:#999">
-          Default credentials: <code>admin / Admin@2026</code> · <code>analyst / Analyst@2026</code>
+        <div style="text-align:center;margin-top:16px;font-size:12px;color:#475569;font-weight:500">
+          Default credentials: <code>admin / Admin@2026</code> | <code>analyst / Analyst@2026</code>
         </div>""", unsafe_allow_html=True)
 
 
@@ -213,8 +213,8 @@ def page_dashboard():
             <div class="audit-row">
               <div class="audit-dot"></div>
               <div>
-                <b>{et}</b> · {actor}
-                <div style="color:#6b7280;font-size:11px">{ts}</div>
+                <b style="color:var(--navy)">{et}</b> · <span style="color:var(--text)">{actor}</span>
+                <div style="color:var(--text-muted);font-size:11px;font-weight:500">{ts}</div>
                 <div class="audit-hash">Hash: {h}…</div>
               </div>
             </div>""", unsafe_allow_html=True)

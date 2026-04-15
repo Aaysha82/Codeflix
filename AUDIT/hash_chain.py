@@ -137,16 +137,25 @@ def log_login(username: str, role: str, success: bool) -> dict:
     }, actor=username)
 
 
-def log_analysis(txn_id: str, risk_score: float, risk_level: str, actor: str) -> dict:
-    return append_event("TRANSACTION_ANALYZED", {
-        "transaction_id": txn_id, "risk_score": risk_score, "risk_level": risk_level
-    }, actor=actor)
+def log_analysis(txn_id: str, risk_score: float, risk_level: str, actor: str, extra_data: dict = None) -> dict:
+    data = {
+        "transaction_id": txn_id,
+        "risk_score": risk_score,
+        "risk_level": risk_level
+    }
+    if extra_data:
+        data.update(extra_data)
+    return append_event("TRANSACTION_ANALYZED", data, actor=actor)
 
 
-def log_sar_generated(txn_id: str, account_id: str, actor: str) -> dict:
+def log_sar_generated(txn_id: str, account_id: str, sar_text: str, actor: str) -> dict:
     return append_event("SAR_GENERATED", {
-        "transaction_id": txn_id, "account_id": account_id
+        "transaction_id": txn_id,
+        "account_id": account_id,
+        "sar_content_hash": hashlib.sha256(sar_text.encode()).hexdigest(),
+        "sar_preview": sar_text[:200] + "..."
     }, actor=actor)
+
 
 
 def log_alert_sent(txn_id: str, recipient: str, alert_type: str) -> dict:

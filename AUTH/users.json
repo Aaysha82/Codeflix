@@ -1,0 +1,20 @@
+{
+  "admin": {
+    "user_id": "0184e8fc-a55e-4dcb-9b2d-1cc2c16cb2d1",
+    "username": "admin",
+    "email": "admin@proofsar.ai",
+    "hashed_password": "$2b$12$LqYh4wniQRqgbh.KxwbSfuoV2TJLxO5O4fVLR7pit8u5PwmAZK1Re",
+    "role": "admin",
+    "is_active": true,
+    "created_at": "2026-04-14T19:51:03.344723+00:00"
+  },
+  "analyst": {
+    "user_id": "84a2b3ac-6931-4a8f-84fe-52b7ad8bc092",
+    "username": "analyst",
+    "email": "analyst@proofsar.ai",
+    "hashed_password": "$2b$12$8Sz5BWD8qd0wDwi80E/l..Em7ma7kd7qTJiY1RTq4S5H1QcW4NAWK",
+    "role": "analyst",
+    "is_active": true,
+    "created_at": "2026-04-14T19:51:03.687124+00:00"
+  }
+}

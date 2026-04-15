@@ -53,30 +53,34 @@ def _build_sar_prompt(verdict: dict) -> str:
     return textwrap.dedent(f"""
     You are a senior AML Compliance Officer and expert SAR writer at a major Indian bank.
     Generate a professional, regulator-ready Suspicious Activity Report (SAR) narrative 
-    based on the following transaction analysis. Write in formal banking compliance language.
-    Structure: (1) Subject Information, (2) Suspicious Activity Description, 
-    (3) Analysis & Indicators, (4) Legal Basis, (5) Recommended Action.
-    Keep it under 400 words. Be specific and evidence-based.
+    based on the following transaction assessment. Write in formal banking compliance language.
 
-    --- TRANSACTION ANALYSIS ---
+    --- TRANSACTION DETAILS ---
     Transaction ID : {txn_id}
     Account ID     : {account}
     Amount         : INR {float(amount):,.2f}
-    Channel        : {channel}
-    Location       : {location}
-    Risk Score     : {float(risk):.2%}
-    Risk Level     : {risk_lvl}
-    AML Rules Hit  : {rules}
+    Channel/Method : {channel}
+    Jurisdiction   : {location}
+    
+    --- RISK DETECTION RESULTS ---
+    Risk Score     : {float(risk):.2%} ({risk_lvl} Risk)
+    Rules Triggered: {rules}
+    Primary Risk Factors:
+    {reasons if reasons else '  - Anomalous activity deviating from profile'}
 
-    AI Risk Indicators:
-    {reasons if reasons else '  - No specific indicators'}
+    --- LEGAL GROUNDS ---
+    {legal_str if legal_str else '  - Suspicion under PMLA Section 12A'}
+    
+    --- NARRATIVE REQUIREMENTS ---
+    Your report MUST cover:
+    1. SUMMARY OF SUSPICION: Why is this being reported? (Focus on {rules if rules != 'None' else 'anomaly'})
+    2. PATTERN ANALYSIS: How does this amount/method fit money laundering patterns like Structuring or Layering?
+    3. LEGAL JUSTIFICATION: Explicitly mention the relevant sections of PMLA 2002.
+    4. CONCLUSION: Final compliance recommendation.
 
-    Legal Violations Detected:
-    {legal_str if legal_str else '  - Under review'}
-    ---
-
-    Write the SAR narrative now:
+    Maintain a serious, professional, and objective tone. Keep it under 350 words.
     """).strip()
+
 
 
 def generate_sar_with_gemini(verdict: dict) -> dict:

@@ -169,7 +169,13 @@ def analyze(txn: TransactionInput, user: dict = Depends(current_user)):
         # Audit log
         audit_rec = log_analysis(
             txn.transaction_id, verdict.risk_score,
-            verdict.risk_level, user["username"]
+            verdict.risk_level, user["username"],
+            extra_data={
+                "is_suspicious": verdict.is_guilty,
+                "ml_score":      verdict.ml_score,
+                "rule_score":    verdict.rule_score,
+                "rules_triggered": verdict.triggered_rules
+            }
         )
 
         # Auto-alert if HIGH risk
@@ -250,6 +256,7 @@ def generate_sar(req: SARRequest,
         audit_rec = log_sar_generated(
             verdict.get("transaction_id", "N/A"),
             verdict.get("account_id",     "N/A"),
+            sar_resp.get("sar_text",      ""),
             actor = user["username"]
         )
 

@@ -4,6 +4,7 @@ Composite risk scorer that fuses ML probability + C++ rule scores
 into a single guilt verdict with detailed legal mapping.
 """
 from __future__ import annotations
+import os
 import json
 from dataclasses import dataclass, field, asdict
 from typing import Any
@@ -11,32 +12,17 @@ from loguru import logger
 
 
 # ─── Legal violation catalogue ────────────────────────────────────────────────
-LEGAL_VIOLATIONS = {
-    "STRUCTURING": {
-        "act":         "PMLA 2002",
-        "section":     "Section 12 / 12A",
-        "rbi_circular": "RBI/2015-16/42 — Master Direction on KYC",
-        "description": "Deliberate splitting of transactions to avoid CTR threshold",
-        "penalty":     "Imprisonment up to 7 years + fine up to ₹5 lakh",
-        "fatf_ref":    "FATF Recommendation 20 — Reporting of Suspicious Transactions",
-    },
-    "LAYERING": {
-        "act":         "PMLA 2002",
-        "section":     "Section 3 & 4",
-        "rbi_circular": "RBI/2019-20/88 — AML/CFT Guidelines",
-        "description": "Converting illicit funds via complex international transfers",
-        "penalty":     "Imprisonment 3–7 years + property attachment",
-        "fatf_ref":    "FATF Recommendation 1 — Risk-Based Approach",
-    },
-    "SMURFING": {
-        "act":         "PMLA 2002",
-        "section":     "Section 12 read with FEMA 1999",
-        "rbi_circular": "RBI/2023-24/69 — Suspicious Transaction Reporting",
-        "description": "Using multiple agents / accounts to aggregate small amounts",
-        "penalty":     "Imprisonment up to 7 years + civil penalties under FEMA",
-        "fatf_ref":    "FATF Recommendation 26 — Regulation & Supervision of FIs",
-    },
-}
+def _load_legal_map() -> dict:
+    path = os.path.join(os.path.dirname(__file__), "legal_map.json")
+    if os.path.exists(path):
+        try:
+            with open(path, "r") as f:
+                return json.load(f)
+        except Exception as e:
+            logger.error(f"Failed to load legal_map.json: {e}")
+    return {}
+
+LEGAL_VIOLATIONS = _load_legal_map()
 
 RISK_BAND = {
     "HIGH":   (0.70, 1.01),
@@ -61,6 +47,7 @@ class GuiltVerdict:
     recommendation: str
     sar_required:   bool
     narrative:      str
+    audit_hash:     str = ""
     metadata:       dict = field(default_factory=dict)
 
     def to_dict(self) -> dict:
@@ -74,7 +61,7 @@ class GuiltVerdict:
 def _fuse_scores(ml_score: float, rule_score: float) -> float:
     """
     Weighted fusion:  60% ML probability + 40% rule-based score.
-    If rule score > 0.75, boost final score by 10% (rules catch obvious patterns).
+    If rule score > 0.75, boost final score by 10%.
     """
     fused = 0.60 * ml_score + 0.40 * rule_score
     if rule_score >= 0.75:
@@ -89,8 +76,19 @@ def _get_risk_level(score: float) -> str:
     return "LOW"
 
 
-def _get_legal_violations(triggered_rules: list[str]) -> list[dict]:
-    return [LEGAL_VIOLATIONS[r] for r in triggered_rules if r in LEGAL_VIOLATIONS]
+def _get_legal_violations(triggered_rules: list[str], ml_result: dict) -> list[dict]:
+    violations = []
+    # Add rule-based violations
+    for r in triggered_rules:
+        if r in LEGAL_VIOLATIONS:
+            violations.append(LEGAL_VIOLATIONS[r])
+    
+    # Add ML-based high value indicator if rule doesn't catch it
+    if ml_result.get("risk_score", 0) > 0.8 and "HIGH_VALUE" in LEGAL_VIOLATIONS:
+        if not any(v.get("act") == LEGAL_VIOLATIONS["HIGH_VALUE"].get("act") for v in violations):
+            violations.append(LEGAL_VIOLATIONS["HIGH_VALUE"])
+            
+    return violations
 
 
 def _build_recommendation(risk_level: str, triggered_rules: list[str]) -> str:
@@ -112,7 +110,8 @@ def _build_recommendation(risk_level: str, triggered_rules: list[str]) -> str:
 
 def _build_narrative(
     txn: dict, risk_score: float, risk_level: str,
-    triggered_rules: list[str], top_reasons: list[dict]
+    triggered_rules: list[str], top_reasons: list[dict],
+    violations: list[dict]
 ) -> str:
     acc     = txn.get("account_id", "N/A")
     amt     = txn.get("amount",     0)
@@ -120,6 +119,10 @@ def _build_narrative(
     ch      = txn.get("channel",    "N/A")
     reasons = "\n".join(f"  • {r['reason']}" for r in top_reasons[:3]) if top_reasons else "  • No specific indicators"
     rules   = ", ".join(triggered_rules) if triggered_rules else "None"
+    
+    legal_justification = ""
+    for v in violations[:2]:
+        legal_justification += f"\n  - {v['act']} ({v['section']}): {v['description']}"
 
     return (
         f"PROOFSAR AI — SUSPICION ASSESSMENT REPORT\n"
@@ -127,7 +130,8 @@ def _build_narrative(
         f"Account:        {acc}\n"
         f"Transaction:    ₹{float(amt):,.2f} via {ch} ({loc})\n"
         f"Risk Score:     {risk_score:.2%}  [{risk_level}]\n"
-        f"Rules Triggered: {rules}\n\n"
+        f"Rules Triggered: {rules}\n"
+        f"Legal Basis:    {legal_justification if legal_justification else 'Under Review'}\n\n"
         f"PRIMARY INDICATORS:\n{reasons}\n\n"
         f"ASSESSMENT:\n"
         f"Based on ML model probability ({txn.get('_ml_score', 0):.2%}) fused with "
@@ -145,12 +149,6 @@ def compute_guilt(
 ) -> GuiltVerdict:
     """
     Fuse ML + rule results into a final GuiltVerdict.
-
-    Args:
-        txn         : raw transaction dict
-        ml_result   : output from ML/train_model.predict_transaction()
-        rule_result : output from DETECTION/cpp_runner.run_detection()
-        shap_reasons: output from ML/explainability.get_top_reasons()
     """
     ml_score   = float(ml_result.get("risk_score",  0.0))
     rule_score = float(rule_result.get("risk_score", 0.0))
@@ -158,7 +156,7 @@ def compute_guilt(
     risk_level = _get_risk_level(fused)
 
     triggered  = rule_result.get("triggered_rules", [])
-    violations = _get_legal_violations(triggered)
+    violations = _get_legal_violations(triggered, ml_result)
     top_reasons = shap_reasons or []
 
     # Annotate txn for narrative
@@ -166,7 +164,7 @@ def compute_guilt(
     txn["_rule_score"] = rule_score
 
     recommendation = _build_recommendation(risk_level, triggered)
-    narrative      = _build_narrative(txn, fused, risk_level, triggered, top_reasons)
+    narrative      = _build_narrative(txn, fused, risk_level, triggered, top_reasons, violations)
 
     return GuiltVerdict(
         transaction_id   = txn.get("transaction_id", ""),
@@ -191,3 +189,4 @@ def compute_guilt(
             "location":    txn.get("location"),
         }
     )
+

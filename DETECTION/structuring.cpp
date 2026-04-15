@@ -1,9 +1,9 @@
-"""
+/*
 DETECTION/structuring.cpp
 C++ OOP Rule-based AML Detection Engine
 Compile: g++ -o DETECTION/detector DETECTION/structuring.cpp -std=c++17
 Run:     DETECTION/detector <json_input>
-"""
+*/
 #include <iostream>
 #include <string>
 #include <vector>

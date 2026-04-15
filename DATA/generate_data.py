@@ -161,7 +161,7 @@ def generate_dataset(n_accounts: int = 300, fraud_ratio: float = 0.04) -> pd.Dat
 
 def add_features(df: pd.DataFrame) -> pd.DataFrame:
     """Add engineered features for ML."""
-    df["timestamp"] = pd.to_datetime(df["timestamp"])
+    df["timestamp"] = pd.to_datetime(df["timestamp"], format='ISO8601')
     df["hour"] = df["timestamp"].dt.hour
     df["day_of_week"] = df["timestamp"].dt.dayofweek
     df["is_weekend"] = (df["day_of_week"] >= 5).astype(int)

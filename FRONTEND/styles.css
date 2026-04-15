@@ -3,20 +3,20 @@
 
 /* ── Root Variables ─────────────────────────────────────────── */
 :root {
-  --navy:      #1a237e;
-  --blue:      #283593;
-  --accent:    #1976d2;
-  --accent-lt: #e3f2fd;
-  --green:     #2e7d32;
-  --red:       #c62828;
-  --orange:    #e65100;
+  --navy:      #1a237e; /* Navy blue */
+  --blue:      #283593; /* Royal blue */
+  --accent:    #0d47a1; /* High contrast accent (4.5:1+) */
+  --accent-lt: #e3f2fd; /* Light surface blue */
+  --green:     #1b5e20; /* High contrast green */
+  --red:       #b71c1c; /* High contrast red */
+  --orange:    #bf360c; /* High contrast orange (on white) */
   --grey-bg:   #f8faff;
   --white:     #ffffff;
-  --text:      #1c1c2e;
-  --text-muted:#6b7280;
-  --border:    #e0e7ff;
-  --shadow:    0 2px 12px rgba(26,35,126,0.08);
-  --radius:    12px;
+  --text:      #1e293b; /* Slate-900 (Deep contrast) */
+  --text-muted:#475569; /* Slate-600 (WCAG Compliant 4.5:1 on white) */
+  --border:    #e2e8f0;
+  --shadow:    0 4px 20px rgba(15, 23, 42, 0.08);
+  --radius:    14px;
   --radius-sm: 8px;
 }
 
@@ -66,9 +66,11 @@ html, body, [data-testid="stAppViewContainer"] {
   letter-spacing: -0.3px;
 }
 .page-header p {
-  font-size: 13px;
-  opacity: 0.80;
+  font-size: 14px;
+  color: #ffffff !important; /* Force pure white for maximum visibility */
+  font-weight: 500;
   margin: 0;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
 /* ── Metric Cards ────────────────────────────────────────────── */
@@ -234,13 +236,14 @@ html, body, [data-testid="stAppViewContainer"] {
 .reason-pill {
   display: inline-block;
   background: var(--accent-lt);
-  color: var(--accent);
-  border: 1px solid #bbdefb;
+  color: var(--navy); /* Deep navy on light blue (High Contrast) */
+  border: 1px solid var(--border);
   border-radius: 20px;
-  padding: 4px 12px;
-  font-size: 11px;
-  font-weight: 500;
-  margin: 3px;
+  padding: 5px 14px;
+  font-size: 11.5px;
+  font-weight: 600;
+  margin: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 /* ── Audit Row ───────────────────────────────────────────────── */
@@ -260,18 +263,59 @@ html, body, [data-testid="stAppViewContainer"] {
   flex-shrink: 0;
 }
 .audit-hash {
-  font-family: monospace;
-  font-size: 10px;
-  color: var(--text-muted);
+  font-family: 'Roboto Mono', monospace;
+  font-size: 10.5px;
+  color: var(--text); /* Full visibility slate */
   word-break: break-all;
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
 }
 
 /* ── Spinner ─────────────────────────────────────────────────── */
 .stSpinner > div { border-color: var(--accent) transparent transparent transparent !important; }
 
-/* ── Responsive ──────────────────────────────────────────────── */
-@media (max-width: 768px) {
-  .page-header { padding: 18px 16px; }
-  .page-header h1 { font-size: 17px; }
-  .metric-card .value { font-size: 22px; }
+/* ── Streamlit Global Overrides ───────────────────────────────── */
+[data-testid="stHeader"] { background: rgba(255,255,255,0) !important; }
+.stMarkdown p, .stMarkdown li { color: var(--text) !important; line-height: 1.6; }
+.stInfo { background-color: #f1f5f9 !important; color: #1e293b !important; border: 1px solid #cbd5e1 !important; }
+.stInfo p, .stInfo li, .stInfo span { color: #1e293b !important; font-weight: 500 !important; }
+.stWarning { background-color: #fffbeb !important; color: #92400e !important; border: 1px solid #fde68a !important; }
+.stWarning p, .stWarning li, .stWarning span { color: #78350f !important; font-weight: 600 !important; }
+
+/* Improve file uploader visibility */
+[data-testid="stFileUploader"] {
+    background: var(--white);
+    border: 2px dashed #cbd5e1;
+    border-radius: var(--radius);
+    padding: 20px;
+}
+[data-testid="stFileUploader"] section > div {
+    color: var(--text) !important;
+}
+
+/* Sidebar button active contrast */
+[data-testid="stSidebar"] .stButton > button[kind="primary"] {
+    background: var(--navy) !important;
+    color: var(--white) !important;
+    border: none !important;
+}
+[data-testid="stSidebar"] .stButton > button[kind="secondary"] {
+    background: #f1f5f9 !important;
+    color: #475569 !important;
+    border: 1px solid #e2e8f0 !important;
+}
+[data-testid="stSidebar"] .stButton > button[kind="secondary"]:hover {
+    background: #e2e8f0 !important;
+    color: var(--navy) !important;
+}
+
+/* Form input readability */
+.stTextInput input, .stNumberInput input {
+    color: var(--text) !important;
+    font-weight: 500 !important;
+}
+::placeholder {
+    color: #94a3b8 !important;
+    opacity: 1;
 }

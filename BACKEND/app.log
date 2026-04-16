@@ -339,3 +339,42 @@ Best Model: XGBoost with AUC=0.9995
 2026-04-17 00:07:01.580 | SUCCESS  | BACKEND.main:lifespan:56 - PostgreSQL/SQLite database initialized and seeded
 2026-04-17 00:07:28.521 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [13] AUTH_LOGIN logged → bd787a0c5cd1
 2026-04-17 00:07:54.503 | ERROR    | BACKEND.routes:batch_analysis_async:224 - Async batch trigger error: No module named 'sqla'
+2026-04-17 00:14:33.181 | INFO     | BACKEND.main:lifespan:31 - ============================================================
+2026-04-17 00:14:33.182 | INFO     | BACKEND.main:lifespan:32 -   ProofSAR AI v1.0.0 starting …
+2026-04-17 00:14:33.183 | INFO     | BACKEND.main:lifespan:33 -   Environment : development
+2026-04-17 00:14:33.184 | INFO     | BACKEND.main:lifespan:34 -   Docs        : http://0.0.0.0:8000/docs
+2026-04-17 00:14:33.185 | INFO     | BACKEND.main:lifespan:35 - ============================================================
+2026-04-17 00:14:33.490 | SUCCESS  | BACKEND.main:lifespan:41 - ML model loaded
+2026-04-17 00:14:33.522 | SUCCESS  | BACKEND.main:lifespan:56 - PostgreSQL/SQLite database initialized and seeded
+2026-04-17 00:14:42.612 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [14] AUTH_LOGIN logged → 41f4d5939cbe
+2026-04-17 00:15:30.936 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [15] AUTH_LOGIN logged → cf026c063d5b
+2026-04-17 00:16:22.939 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [16] AUTH_LOGIN logged → b87d2311c3d9
+2026-04-17 00:24:35.338 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [17] AUTH_LOGIN logged → 0a2e5bd9e3e6
+2026-04-17 00:24:35.960 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [18] AUTH_LOGIN logged → 5491f77bfbae
+2026-04-17 00:24:36.498 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [19] AUTH_LOGIN logged → 760235ab6ab4
+2026-04-17 00:24:36.578 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [20] AUTH_LOGIN logged → 3ad1f67d47f1
+2026-04-17 00:24:37.132 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [21] AUTH_LOGIN logged → 6fa69792a6ed
+2026-04-17 00:24:37.167 | WARNING  | AUTH.jwt_handler:decode_access_token:69 - JWT decode error: Invalid header string: 'utf-8' codec can't decode byte 0x8a in position 0: invalid start byte
+2026-04-17 00:24:37.635 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [22] AUTH_LOGIN logged → b3970ef8aed3
+2026-04-17 00:24:38.013 | WARNING  | BACKEND.routes:analyze:165 - SHAP failed: Model type not yet supported by TreeExplainer: <class 'sklearn.calibration.CalibratedClassifierCV'>
+2026-04-17 00:24:38.083 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [23] TRANSACTION_ANALYZED logged → 5690d7e5fbc0
+2026-04-17 00:24:38.084 | WARNING  | ALERTS.gmail_service:_send_email:30 - EMAIL_PASS is placeholder — skipping SMTP
+2026-04-17 00:24:38.145 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [24] ALERT_SENT logged → 23f030a02943
+2026-04-17 00:24:38.630 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [25] AUTH_LOGIN logged → 5080a872b9e7
+2026-04-17 00:24:38.774 | WARNING  | BACKEND.routes:analyze:165 - SHAP failed: Model type not yet supported by TreeExplainer: <class 'sklearn.calibration.CalibratedClassifierCV'>
+2026-04-17 00:24:38.837 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [26] TRANSACTION_ANALYZED logged → e2680835f141
+2026-04-17 00:24:39.307 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [27] AUTH_LOGIN logged → a3a0638336d5
+2026-04-17 00:24:39.781 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [28] AUTH_LOGIN logged → a518de408318
+2026-04-17 00:24:40.277 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [29] AUTH_LOGIN logged → 1ddddb6dbe3e
+2026-04-17 00:24:40.307 | WARNING  | AI.gemini_client:_init_gemini:24 - GEMINI_API_KEY not set — SAR will use template fallback
+2026-04-17 00:24:40.394 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [30] SAR_GENERATED logged → a922d85402cb
+2026-04-17 00:24:40.395 | WARNING  | ALERTS.gmail_service:_send_email:30 - EMAIL_PASS is placeholder — skipping SMTP
+2026-04-17 00:24:40.458 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [31] ALERT_SENT logged → 77f5803c07c8
+2026-04-17 00:24:40.958 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [32] AUTH_LOGIN logged → b95f4afb46f2
+2026-04-17 00:24:41.628 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [33] AUTH_LOGIN logged → 1e4e987f3190
+2026-04-17 00:24:42.170 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [34] AUTH_LOGIN logged → ed7d13b4c3c3
+2026-04-17 00:24:42.678 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [35] AUTH_LOGIN logged → 66aa05cc5d41
+2026-04-17 00:24:43.194 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [36] AUTH_LOGIN logged → cfd5f7d567ad
+2026-04-17 00:24:44.352 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [37] AUTH_LOGIN logged → baf6266860c2
+2026-04-17 00:24:46.252 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [38] TEST_EVENT logged → 42fce540f284
+2026-04-17 00:24:49.907 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [39] BATCH_ANALYSIS_ASYNC_COMPLETED logged → 36c76ef5c0dd

@@ -196,3 +196,26 @@ class TestAudit:
         data = r.json()
         assert "total_analyses" in data
         assert "chain_integrity" in data
+
+
+# ─── Async Tasks ──────────────────────────────────────────────────────────────
+class TestAsyncTasks:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.token   = get_token()
+        self.headers = auth_headers(self.token)
+
+    def test_batch_analysis_async_queued(self):
+        csv_content = "transaction_id,account_id,amount,location,channel\nTXN1,ACC1,500,Mumbai,Online\nTXN2,ACC2,950000,Panama,Wire"
+        files = {"file": ("test.csv", csv_content)}
+        r = client.post("/analyze/batch/async", files=files, headers=self.headers)
+        assert r.status_code == 200
+        data = r.json()
+        assert "task_id" in data
+        assert data["status"] == "QUEUED"
+
+    def test_task_status_invalid_id(self):
+        r = client.get("/tasks/invalid-id", headers=self.headers)
+        # Even with invalid ID, Celery AsyncResult usually returns a status of PENDING
+        assert r.status_code == 200
+        assert r.json()["status"] == "PENDING"

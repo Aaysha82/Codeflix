@@ -265,3 +265,36 @@ class TestPDFGeneration:
         assert isinstance(pdf, bytes)
         assert len(pdf) > 1000
         assert pdf[:4] == b"%PDF"   # Valid PDF header
+
+
+# ─── 9. Async Batch Flow ──────────────────────────────────────────────────────
+class TestAsyncBatchFlow:
+    def test_full_async_pipeline(self):
+        """
+        Tests the async pipeline via component calls.
+        Note: Real E2E via API requires a running worker or eager mode.
+        """
+        from BACKEND.celery_app import celery_app
+        from BACKEND.tasks import process_batch_transactions
+        from AUDIT.hash_chain import get_recent_events
+        
+        # Force eager mode for this test so it runs synchronously
+        celery_app.conf.task_always_eager = True
+        
+        txns = [
+            {"transaction_id": "ASYNC-1", "amount": 500, "location": "Local"},
+            {"transaction_id": "ASYNC-2", "amount": 990000, "location": "Panama"}
+        ]
+        
+        # Trigger task
+        result = process_batch_transactions.apply(args=[txns]).get()
+        
+        assert result["status"] == "completed"
+        assert result["total_processed"] == 2
+        assert result["flagged_count"] >= 1
+        
+        # Verify it hit the audit chain
+        events = get_recent_events(5)
+        batch_events = [e for e in events if e["event_type"] == "BATCH_ANALYSIS_ASYNC_COMPLETED"]
+        assert len(batch_events) > 0
+        assert batch_events[0]["data"]["total_processed"] == 2

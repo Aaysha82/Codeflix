@@ -10,6 +10,7 @@ from BACKEND.celery_app import celery_app
 from DETECTION.cpp_runner import run_detection
 from ML.train_model import predict_transaction
 from REASONING.guilt_engine import compute_guilt
+from AUDIT.hash_chain import append_event
 
 @celery_app.task(bind=True, name="process_batch_transactions")
 def process_batch_transactions(self, transactions: List[Dict]):
@@ -45,9 +46,18 @@ def process_batch_transactions(self, transactions: List[Dict]):
         except Exception as e:
             logger.error(f"Task error on txn {txn.get('transaction_id')}: {e}")
             
+    flagged_count = sum(1 for r in results if r["is_guilty"])
+    
+    # Add to audit chain
+    append_event("BATCH_ANALYSIS_ASYNC_COMPLETED", {
+        "total_processed": total,
+        "flagged_count": flagged_count,
+        "task_id": self.request.id
+    }, actor="system_worker")
+
     return {
         "status": "completed",
         "total_processed": total,
-        "flagged_count": sum(1 for r in results if r["is_guilty"]),
-        "results": results[:500] # Limit result size in backend
+        "flagged_count": flagged_count,
+        "results": results[:500] 
     }

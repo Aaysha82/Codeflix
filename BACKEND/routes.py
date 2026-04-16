@@ -14,8 +14,10 @@ from pydantic import BaseModel, Field
 import pandas as pd
 import io
 
+from sqlalchemy.orm import Session
 from AUTH.auth        import register_user, login_user, get_current_user, list_users
 from AUTH.jwt_handler import has_permission
+from BACKEND.database import get_db, TransactionRecord, AuditEvent
 from ML.train_model   import predict_transaction, load_model
 from ML.explainability import get_top_reasons, generate_narrative
 from DETECTION.cpp_runner  import run_detection, run_batch_detection
@@ -357,9 +359,8 @@ def health():
 
 
 @router.get("/metrics", tags=["System"])
-def metrics(db: Session = Depends(_get_db), _: dict = Depends(current_user)):
+def metrics(db: Session = Depends(get_db), _: dict = Depends(current_user)):
     """High-level system metrics with risk distribution."""
-    from BACKEND.database import TransactionRecord, AuditEvent
     
     total_analyses = db.query(TransactionRecord).count()
     total_sars = db.query(AuditEvent).filter(AuditEvent.event_type == "SAR_GENERATED").count()

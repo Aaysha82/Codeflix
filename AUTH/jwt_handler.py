@@ -2,7 +2,7 @@
 AUTH/jwt_handler.py
 JWT token creation, validation, and role-based access control
 """
-import os
+import os, uuid
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 from jose import JWTError, jwt

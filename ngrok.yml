@@ -1,0 +1,19 @@
+# ProofSAR AI — Ngrok Configuration Template
+# Use this to expose the Streamlit frontend to a public URL for remote demos.
+# Run: ngrok start --all --config ./ngrok.yml
+
+authtoken: YOUR_NGROK_AUTHTOKEN_HERE # Get from https://dashboard.ngrok.com/tunnels/authtokens
+
+tunnels:
+  proofsar_frontend:
+    proto: http
+    addr: 8501
+    schemes:
+      - https
+  proofsar_backend:
+    proto: http
+    addr: 8000
+    schemes:
+      - https
+
+# Note: If exposing publicly, ensure JWT authentication is strictly enforced.

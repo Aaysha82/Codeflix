@@ -48,14 +48,87 @@ def ensure_model():
 def compile_cpp():
     src = "DETECTION/structuring.cpp"
     out = "DETECTION/detector.exe" if platform.system() == "Windows" else "DETECTION/detector"
-    try:
-        subprocess.run(["g++", "-o", out, src, "-std=c++17"], capture_output=True)
-        print("[Setup] C++ engine ready.")
-    except Exception:
-        print("[Setup] Using Python fallback.")
+    inc = "-IDETECTION/include"
+    
+    # Try C++17, fallback to C++14 if needed (for GCC < 7)
+    for std in ["-std=c++17", "-std=c++14"]:
+        try:
+            res = subprocess.run(["g++", "-o", out, src, std, inc], capture_output=True, text=True)
+            if res.returncode == 0:
+                print(f"[Setup] C++ engine ready ({std}).")
+                return
+        except Exception:
+            continue
+    print("[Setup] Using Python fallback for detection.")
+
+def clean_project():
+    """Remove all generated files, caches, and build artifacts."""
+    import shutil
+    print("[Clean] Starting cleanup...")
+    
+    targets = [
+        "DATA/transactions.csv",
+        "DATA/transactions_test.csv",
+        "DATA/proofsar.db",
+        "ML/model.pkl",
+        "ML/scaler.pkl",
+        "ML/metrics.json",
+        "AUDIT/audit_chain.json",
+        "DETECTION/detector.exe",
+        "DETECTION/detector",
+        "BACKEND/app.log",
+    ]
+    
+    # Remove specific files
+    for t in targets:
+        if os.path.exists(t):
+            try:
+                os.remove(t)
+                print(f"  - Removed: {t}")
+            except Exception as e:
+                print(f"  - Failed to remove {t}: {e}")
+
+    # Remove directories
+    dirs = [
+        "ML/mlruns",
+        "REPORTS",   # Added REPORTS to clean
+        "__pycache__",
+        "BACKEND/__pycache__",
+        "FRONTEND/__pycache__",
+        "ML/__pycache__",
+        "DETECTION/__pycache__",
+        "AUTH/__pycache__",
+        "AUDIT/__pycache__",
+        "REASONING/__pycache__",
+        "DATA/__pycache__",
+        "AI/__pycache__",
+        "ALERTS/__pycache__",
+    ]
+    
+    for d in dirs:
+        if os.path.exists(d):
+            # For REPORTS, we probably just want to clear content or ensure it exists
+            if d == "REPORTS":
+                 shutil.rmtree(d)
+                 os.makedirs(d, exist_ok=True)
+                 print(f"  - Cleared directory: {d}")
+                 continue
+                 
+            try:
+                shutil.rmtree(d)
+                print(f"  - Removed directory: {d}")
+            except Exception as e:
+                print(f"  - Failed to remove dir {d}: {e}")
+
+    print("[Clean] Done.")
 
 def main():
     mode = sys.argv[1] if len(sys.argv) > 1 else "both"
+    
+    if mode == "clean":
+        clean_project()
+        return
+
     print(BANNER)
     
     os.makedirs("DATA", exist_ok=True)

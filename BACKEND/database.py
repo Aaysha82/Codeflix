@@ -35,7 +35,7 @@ class AuditEvent(Base):
     seq = Column(Integer)
     event_type = Column(String, index=True)
     actor = Column(String, index=True)
-    timestamp = Column(DateTime, default=datetime.now(timezone.utc))
+    timestamp = Column(String)  # Store as ISO string for bit-perfect hashing
     event_data = Column(JSON)
     prev_hash = Column(String)
     current_hash = Column(String)

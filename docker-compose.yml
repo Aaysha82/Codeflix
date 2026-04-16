@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: proofsar_redis
+    ports:
+      - "6379:6379"
+
+  backend:
+    build: .
+    container_name: proofsar_backend
+    env_file: .env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=sqlite:///BACKEND/proofsar.db
+    command: uvicorn BACKEND.main:app --host 0.0.0.0 --port 8000
+    depends_on:
+      - redis
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+
+  worker:
+    build: .
+    container_name: proofsar_worker
+    env_file: .env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    command: celery -A BACKEND.celery_app worker --loglevel=info
+    depends_on:
+      - redis
+      - backend
+    volumes:
+      - .:/app
+
+  frontend:
+    build: .
+    container_name: proofsar_frontend
+    env_file: .env
+    environment:
+      - BACKEND_URL=http://backend:8000
+    command: streamlit run FRONTEND/app.py --server.port 8501 --server.address 0.0.0.0
+    depends_on:
+      - backend
+    ports:
+      - "8501:8501"
+    volumes:
+      - .:/app
+
+volumes:
+  proof_data:

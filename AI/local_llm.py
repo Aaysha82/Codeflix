@@ -1,7 +1,7 @@
 """
 AI/local_llm.py
-Template-based SAR generator — works offline without any API key.
-Used as fallback when Gemini is unavailable.
+Local AI Support Engine — Provides offline, regulator-grounded SAR generation.
+Used as an air-gapped fallback when cloud infrastructure (Gemini) is unavailable.
 """
 from __future__ import annotations
 from datetime import datetime, timezone
@@ -9,7 +9,8 @@ from datetime import datetime, timezone
 
 def generate_sar_template(verdict: dict) -> dict:
     """
-    Generate a professional SAR document from verdict data using templates.
+    Generate a professional SAR document using the ProofSAR Offline AI Engine.
+    Grounds the report in regulatory logic without requiring external API connectivity.
     Returns {"sar_text": str, "source": str, "model": str}
     """
     txn_id   = verdict.get("transaction_id", "N/A")

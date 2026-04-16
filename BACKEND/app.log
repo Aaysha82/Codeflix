@@ -194,3 +194,39 @@
 2026-04-16 13:03:44.312 | INFO     | BACKEND.main:lifespan:62 - ProofSAR AI shutting down …
 2026-04-16 13:04:22.760 | ERROR    | BACKEND.main:global_exception_handler:103 - Unhandled error on /auth/login: name 'uuid' is not defined
 2026-04-16 13:04:28.426 | ERROR    | BACKEND.main:global_exception_handler:103 - Unhandled error on /auth/login: name 'uuid' is not defined
+2026-04-16 13:07:33.046 | INFO     | BACKEND.main:lifespan:31 - ============================================================
+2026-04-16 13:07:33.047 | INFO     | BACKEND.main:lifespan:32 -   ProofSAR AI v1.0.0 starting …
+2026-04-16 13:07:33.048 | INFO     | BACKEND.main:lifespan:33 -   Environment : development
+2026-04-16 13:07:33.049 | INFO     | BACKEND.main:lifespan:34 -   Docs        : http://0.0.0.0:8000/docs
+2026-04-16 13:07:33.049 | INFO     | BACKEND.main:lifespan:35 - ============================================================
+2026-04-16 13:07:33.317 | SUCCESS  | BACKEND.main:lifespan:41 - ML model loaded
+2026-04-16 13:07:33.357 | SUCCESS  | BACKEND.main:lifespan:56 - PostgreSQL/SQLite database initialized and seeded
+2026-04-16 13:08:01.523 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [4] AUTH_LOGIN logged → fe2e1b7c786f
+2026-04-16 13:08:35.979 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [5] TRANSACTION_ANALYZED logged → 1a0215059750
+2026-04-16 13:08:35.980 | WARNING  | ALERTS.gmail_service:_send_email:30 - EMAIL_PASS is placeholder — skipping SMTP
+2026-04-16 13:08:36.043 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [6] ALERT_SENT logged → 7390d3cfdc50
+2026-04-16 13:08:53.338 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [7] TRANSACTION_ANALYZED logged → 382dbaede855
+2026-04-16 13:08:53.340 | WARNING  | ALERTS.gmail_service:_send_email:30 - EMAIL_PASS is placeholder — skipping SMTP
+2026-04-16 13:08:53.406 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [8] ALERT_SENT logged → 96c0ce7cc6c1
+2026-04-16 13:09:19.903 | WARNING  | AI.gemini_client:_init_gemini:24 - GEMINI_API_KEY not set — SAR will use template fallback
+2026-04-16 13:09:20.084 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [9] SAR_GENERATED logged → dd2382c87ee9
+2026-04-16 13:09:20.085 | WARNING  | ALERTS.gmail_service:_send_email:30 - EMAIL_PASS is placeholder — skipping SMTP
+2026-04-16 13:09:20.148 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [10] ALERT_SENT logged → 9f3e180c7888
+2026-04-16 22:11:07.351 | INFO     | BACKEND.main:lifespan:31 - ============================================================
+2026-04-16 22:11:07.352 | INFO     | BACKEND.main:lifespan:32 -   ProofSAR AI v1.0.0 starting …
+2026-04-16 22:11:07.352 | INFO     | BACKEND.main:lifespan:33 -   Environment : development
+2026-04-16 22:11:07.352 | INFO     | BACKEND.main:lifespan:34 -   Docs        : http://0.0.0.0:8000/docs
+2026-04-16 22:11:07.353 | INFO     | BACKEND.main:lifespan:35 - ============================================================
+2026-04-16 22:11:07.497 | SUCCESS  | BACKEND.main:lifespan:41 - ML model loaded
+2026-04-16 22:11:07.514 | SUCCESS  | BACKEND.main:lifespan:56 - PostgreSQL/SQLite database initialized and seeded
+2026-04-16 22:11:53.521 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [7] AUTH_LOGIN logged → d847f386051c
+2026-04-16 22:14:31.757 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [8] TRANSACTION_ANALYZED logged → b6faa56e65e2
+2026-04-16 22:14:31.759 | WARNING  | ALERTS.gmail_service:_send_email:30 - EMAIL_PASS is placeholder — skipping SMTP
+2026-04-16 22:14:31.835 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [9] ALERT_SENT logged → 32a4c6ac3c27
+2026-04-16 22:14:52.734 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [10] TRANSACTION_ANALYZED logged → c2e5a7469012
+2026-04-16 22:14:52.736 | WARNING  | ALERTS.gmail_service:_send_email:30 - EMAIL_PASS is placeholder — skipping SMTP
+2026-04-16 22:14:52.796 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [11] ALERT_SENT logged → 524018ecd277
+2026-04-16 22:15:09.740 | WARNING  | AI.gemini_client:_init_gemini:24 - GEMINI_API_KEY not set — SAR will use template fallback
+2026-04-16 22:15:09.895 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [12] SAR_GENERATED logged → 02d31d976b2e
+2026-04-16 22:15:09.897 | WARNING  | ALERTS.gmail_service:_send_email:30 - EMAIL_PASS is placeholder — skipping SMTP
+2026-04-16 22:15:09.957 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [13] ALERT_SENT logged → a3542739fcf2

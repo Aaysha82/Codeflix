@@ -25,7 +25,7 @@ def append_event(event_type: str, event_data: dict, actor: str = "system") -> di
         seq = (last_event.seq + 1) if last_event else 1
         
         block_id = str(uuid.uuid4())
-        timestamp = datetime.now(timezone.utc)
+        timestamp_str = datetime.now(timezone.utc).isoformat()
         
         # Prepare payload for hashing (exclude current_hash itself)
         payload_dict = {
@@ -33,7 +33,7 @@ def append_event(event_type: str, event_data: dict, actor: str = "system") -> di
             "seq": seq,
             "event_type": event_type,
             "actor": actor,
-            "timestamp": timestamp.isoformat(),
+            "timestamp": timestamp_str,
             "event_data": event_data,
             "prev_hash": prev_hash
         }
@@ -45,7 +45,7 @@ def append_event(event_type: str, event_data: dict, actor: str = "system") -> di
             seq=seq,
             event_type=event_type,
             actor=actor,
-            timestamp=timestamp,
+            timestamp=timestamp_str,
             event_data=event_data,
             prev_hash=prev_hash,
             current_hash=current_hash
@@ -61,7 +61,7 @@ def append_event(event_type: str, event_data: dict, actor: str = "system") -> di
             "seq": event.seq,
             "event_type": event.event_type,
             "actor": event.actor,
-            "timestamp": event.timestamp.isoformat(),
+            "timestamp": event.timestamp,  # Already a string
             "current_hash": event.current_hash
         }
     finally:
@@ -85,7 +85,7 @@ def verify_chain() -> dict:
                 "seq": ev.seq,
                 "event_type": ev.event_type,
                 "actor": ev.actor,
-                "timestamp": ev.timestamp.isoformat(),
+                "timestamp": ev.timestamp,  # Now a string directly
                 "event_data": ev.event_data,
                 "prev_hash": ev.prev_hash
             }
@@ -108,7 +108,7 @@ def get_recent_events(limit: int = 50) -> List[dict]:
                 "seq": e.seq,
                 "event_type": e.event_type,
                 "actor": e.actor,
-                "timestamp": e.timestamp.isoformat(),
+                "timestamp": e.timestamp,  # Already a string
                 "current_hash": e.current_hash,
                 "event_data": e.event_data
             } for e in events
@@ -126,7 +126,7 @@ def get_event(event_id: str) -> Optional[dict]:
             "seq": e.seq,
             "event_type": e.event_type,
             "actor": e.actor,
-            "timestamp": e.timestamp.isoformat(),
+            "timestamp": e.timestamp,  # Already a string
             "event_data": e.event_data,
             "current_hash": e.current_hash
         }

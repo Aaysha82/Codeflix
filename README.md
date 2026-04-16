@@ -10,17 +10,81 @@
 
 ---
 
-## 🎯 What It Does
+## 📊 Problem Statement
 
-ProofSAR AI automates the entire AML compliance workflow:
+**ProofSAR AI** addresses the critical challenges in Anti-Money Laundering (AML) compliance, specifically the generation of Suspicious Activity Reports (SARs). Traditional SAR creation is:
 
-| Without ProofSAR AI | With ProofSAR AI |
-|---------------------|-----------------|
-| 5–6 hours per SAR | ~5 minutes |
-| Black-box decisions | SHAP explainability |
-| Manual rule checking | C++ OOP engine |
-| No audit trail | SHA-256 hash chain |
-| Email drafts | Regulator-ready PDF |
+- **Manual and time-consuming**: Financial institutions spend significant resources manually analyzing transactions and writing reports.
+- **Lacks explainability**: Black-box AI systems provide pattern detection without clear reasoning for why activities are flagged as suspicious.
+- **Audit trail gaps**: No cryptographic verification of report integrity or action traceability.
+- **Regulatory compliance risks**: Inconsistent application of AML laws (PMLA, RBI KYC, FIU-IND standards).
+- **Scalability issues**: Cannot handle high-volume transaction monitoring efficiently.
+
+## 💡 How ProofSAR AI Solves the Problem
+
+ProofSAR AI is a **production-ready, explainable SAR generation platform** that combines rule-based detection, machine learning, and AI narrative generation with **full audit traceability**. Unlike typical "AI chatbots," it's a complete compliance platform with glass-box transparency.
+
+## 🛠️ All Functionalities
+
+### 🧠 Dual AI Engine
+- **Gemini (Cloud)**: Google AI-powered narrative generation with regulatory grounding.
+- **Local AI Support**: Offline AI-template support for air-gapped environments.
+- **Toggle capability**: Switch between models based on security/compliance needs.
+
+### ⚖️ "Why Guilty" Reasoning Engine
+- **Evidence-based explanations**: Clear behavioral red flags, financial inconsistencies, and legal violations.
+- **Quantitative evidence**: Statistical analysis with red flag identification.
+- **Supporting evidence**: Documented proof for each suspicious pattern detected.
+
+### 🔐 Cryptographic Audit Trail
+- **SHA256 hash chain**: Tamper-proof logging of all system actions.
+- **Chain integrity verification**: Mathematical proof of data authenticity.
+- **Complete activity log**: Tracks case creation, analysis, SAR generation, edits, approvals.
+
+### 📧 Automated Alert System
+- **Gmail integration**: Automated notifications for high-risk cases.
+- **Alert types**: High Risk, Pending, Approved, Rejected.
+- **Alert history**: Complete tracking with success rates and failure handling.
+
+### 👥 Human-in-the-Loop Workflow
+- **Editable narratives**: Real-time editing of AI-generated SARs.
+- **Version control**: Track changes and maintain approval workflows.
+- **Approve/Reject**: Structured decision-making with comments.
+
+### 📊 Dashboard & Analytics
+- **Risk metrics**: Total cases, high-risk alerts, SARs filed.
+- **Visual charts**: Plotly-based risk distribution and trend analysis.
+- **Recent cases**: Summary view of active investigations.
+
+### 🔍 Case Analysis Engine
+- **CSV upload**: Support for transaction data import.
+- **Demo data**: Pre-loaded test scenarios for immediate evaluation.
+- **Pattern detection**:
+  - **Structuring**: CTR threshold avoidance detection.
+  - **Smurfing**: Coordinated small deposits analysis.
+  - **Layering**: Complex fund movement identification.
+
+### ✍️ SAR Generation
+- **Complete SAR structure**: Executive summary, Customer info, Transaction analysis, Legal basis.
+- **Regulatory compliance**: PMLA, RBI KYC, FIU-IND aligned.
+- **RAG grounding**: Template-based generation with legal citations.
+
+### 🏗️ System Architecture
+- **Frontend**: Streamlit-based professional UI.
+- **Backend**: FastAPI RESTful API.
+- **Data layer**: JSON audit chains, CSV transaction data.
+- **Deployment options**: Local, Docker, cloud-ready.
+
+### 🔒 Enterprise Security
+- **JWT authentication**: Secure API access.
+- **Secrets management**: Production-safe configuration.
+- **CORS support**: Cross-origin request handling.
+
+### 📈 Scalability Features
+- **Batch processing**: Handle multiple cases simultaneously.
+- **Offline capability**: Local model support for disconnected environments.
+- **Public URL support**: Ngrok integration for remote access.
+- **Docker deployment**: Containerized enterprise deployment.
 
 ---
 
@@ -116,6 +180,9 @@ python run_app.py frontend
 
 # Run all tests
 python run_app.py test
+
+# Clean system (removes logs, data, models, and caches)
+python run_app.py clean
 ```
 
 ---

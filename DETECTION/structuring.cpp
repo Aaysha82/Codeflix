@@ -11,10 +11,97 @@ Run:     DETECTION/detector <json_input>
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
+#include <cstdio>
 
-#include <nlohmann/json.hpp>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <sstream>
+#include <algorithm>
+#include <cmath>
+#include <cstdlib>
+#include <cstdio>
+#include <map>
 
-using json = nlohmann::json;
+// Lightweight Manual JSON Parser for simple flat objects
+class SimpleJSON {
+private:
+    std::string raw;
+    std::map<std::string, std::string> data;
+
+    std::string trim(const std::string& s) {
+        size_t first = s.find_first_not_of(" \"\n\r\t");
+        if (first == std::string::npos) return "";
+        size_t last = s.find_last_not_of(" \"\n\r\t");
+        return s.substr(first, (last - first + 1));
+    }
+
+public:
+    SimpleJSON(const std::string& json_str) : raw(json_str) {
+        parse();
+    }
+
+    void parse() {
+        size_t start = raw.find('{');
+        size_t end = raw.find_last_of('}');
+        if (start == std::string::npos || end == std::string::npos) return;
+        
+        std::string content = raw.substr(start + 1, end - start - 1);
+        
+        bool in_quotes = false;
+        std::string current_item;
+        for (char c : content) {
+            if (c == '\"') in_quotes = !in_quotes;
+            if (c == ',' && !in_quotes) {
+                process_item(current_item);
+                current_item = "";
+            } else {
+                current_item += c;
+            }
+        }
+        process_item(current_item);
+    }
+
+    void process_item(const std::string& item) {
+        size_t colon = item.find(':');
+        if (colon != std::string::npos) {
+            std::string key = trim(item.substr(0, colon));
+            std::string val = trim(item.substr(colon + 1));
+            data[key] = val;
+        }
+    }
+
+    std::string value(const std::string& key, const std::string& def) const {
+        auto it = data.find(key);
+        return (it != data.end()) ? it->second : def;
+    }
+
+    double value_double(const std::string& key, double def) const {
+        auto it = data.find(key);
+        return (it != data.end()) ? std::atof(it->second.c_str()) : def;
+    }
+
+    int value_int(const std::string& key, int def) const {
+        auto it = data.find(key);
+        return (it != data.end()) ? std::atoi(it->second.c_str()) : def;
+    }
+    
+    std::string dump_result(bool flagged, double score, const std::vector<std::string>& rules, const std::vector<std::string>& explanations) const {
+        std::stringstream ss;
+        ss << "{\"is_flagged\":" << (flagged ? "true" : "false") << ",";
+        ss << "\"risk_score\":" << score << ",";
+        ss << "\"triggered_rules\":[";
+        for (size_t i = 0; i < rules.size(); ++i) {
+            ss << "\"" << rules[i] << "\"" << (i == rules.size() - 1 ? "" : ",");
+        }
+        ss << "],\"explanations\":[";
+        for (size_t i = 0; i < explanations.size(); ++i) {
+            ss << "\"" << explanations[i] << "\"" << (i == explanations.size() - 1 ? "" : ",");
+        }
+        ss << "]}";
+        return ss.str();
+    }
+};
 
 // ============================================================
 // BASE CLASS: Transaction
@@ -31,15 +118,15 @@ protected:
     int is_weekend;
 
 public:
-    Transaction(const json& j) {
+    Transaction(const SimpleJSON& j) {
         transaction_id = j.value("transaction_id", "txn_000");
         account_id     = j.value("account_id", "acc_000");
-        amount         = j.value("amount", 0.0);
+        amount         = j.value_double("amount", 0.0);
         location       = j.value("location", "Mumbai");
         channel        = j.value("channel", "Online");
         currency       = j.value("currency", "INR");
-        hour           = j.value("hour", 12);
-        is_weekend     = j.value("is_weekend", 0);
+        hour           = j.value_int("hour", 12);
+        is_weekend     = j.value_int("is_weekend", 0);
     }
 
     virtual ~Transaction() = default;
@@ -164,23 +251,24 @@ public:
     }
     ~AMLDetectionEngine() { for (auto* r : rules) delete r; }
 
-    json analyze(const Transaction& txn) const {
-        json res;
-        res["is_flagged"] = false;
-        res["risk_score"] = 0.0;
-        res["triggered_rules"] = json::array();
-        res["explanations"] = json::array();
+    std::string analyze(const Transaction& txn) const {
+        bool flagged = false;
+        double risk_score = 0.0;
+        std::vector<std::string> triggered;
+        std::vector<std::string> explanations;
 
         for (const auto* rule : rules) {
             if (rule->detect(txn)) {
-                res["is_flagged"] = true;
+                flagged = true;
                 double score = rule->getRiskScore(txn);
-                if (score > res["risk_score"]) res["risk_score"] = score;
-                res["triggered_rules"].push_back(rule->getRuleName());
-                res["explanations"].push_back(rule->getExplanation(txn));
+                if (score > risk_score) risk_score = score;
+                triggered.push_back(rule->getRuleName());
+                explanations.push_back(rule->getExplanation(txn));
             }
         }
-        return res;
+        
+        SimpleJSON sj(""); // dummy for helper access
+        return sj.dump_result(flagged, risk_score, triggered, explanations);
     }
 };
 
@@ -190,17 +278,14 @@ int main(int argc, char* argv[]) {
         if (argc > 1) input = argv[1];
         else std::getline(std::cin, input);
 
-        json j = json::parse(input);
+        SimpleJSON j(input);
         Transaction txn(j);
         AMLDetectionEngine engine;
         
-        std::cout << engine.analyze(txn).dump() << std::endl;
+        std::cout << engine.analyze(txn) << std::endl;
     } catch (const std::exception& e) {
-        json err;
-        err["error"] = e.what();
-        err["is_flagged"] = false;
-        err["risk_score"] = 0.0;
-        std::cout << err.dump() << std::endl;
+        std::cout << "{\"error\":\"" << e.what() << "\",\"is_flagged\":false,\"risk_score\":0.0}" << std::endl;
     }
     return 0;
 }
+

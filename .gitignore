@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+ENV/
+
+# Environment variables
+.env
+
+# ProofSAR AI Data & Models
+ML/*.pkl
+ML/metrics.json
+AUDIT/*.json
+DATA/*.csv
+REPORTS/*.png
+REPORTS/*.pdf
+DETECTION/detector
+DETECTION/detector.exe
+*.db
+BACKEND/*.db
+mlruns/
+mlflow.db
+*.log
+
+# IDEs
+.vscode/
+.idea/
+.DS_Store

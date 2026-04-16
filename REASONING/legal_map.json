@@ -1,0 +1,38 @@
+{
+  "STRUCTURING": {
+    "act": "Prevention of Money Laundering Act (PMLA) 2002",
+    "section": "Section 12 / 12A",
+    "rbi_circular": "RBI/2015-16/42 — Master Direction on KYC",
+    "description": "Deliberate splitting of transactions to avoid CTR (Cash Transaction Report) threshold of INR 10 Lakh.",
+    "penalty": "Rigorous imprisonment for 3 to 7 years and fine up to INR 5 Lakh.",
+    "fatf_ref": "FATF Recommendation 20 — Reporting of Suspicious Transactions",
+    "risk_level": "HIGH"
+  },
+  "LAYERING": {
+    "act": "Prevention of Money Laundering Act (PMLA) 2002",
+    "section": "Section 3 & 4",
+    "rbi_circular": "RBI/2019-20/88 — AML/CFT Guidelines",
+    "description": "Engaging in complex tiers of transactions to distance illicit funds from their source, often via international wire transfers.",
+    "penalty": "Imprisonment for 3 to 7 years and attachment of property involved in money laundering.",
+    "fatf_ref": "FATF Recommendation 1 — Risk-Based Approach",
+    "risk_level": "HIGH"
+  },
+  "SMURFING": {
+    "act": "Prevention of Money Laundering Act (PMLA) 2002",
+    "section": "Section 12 read with FEMA 1999",
+    "rbi_circular": "RBI/2023-24/69 — Suspicious Transaction Reporting",
+    "description": "The use of multiple runners or 'smurfs' to conduct small transactions under the reporting threshold to aggregate large sums.",
+    "penalty": "Strict regulatory penalties plus imprisonment for laundering attempts.",
+    "fatf_ref": "FATF Recommendation 26 — Regulation & Supervision of Financial Institutions",
+    "risk_level": "MEDIUM"
+  },
+  "HIGH_VALUE": {
+    "act": "PMLA 2002",
+    "section": "Section 12A",
+    "rbi_circular": "RBI/DBR/AML.BC.81/14.01.001/2015-16",
+    "description": "Unusually large transaction exceeding account profile and historical averages.",
+    "penalty": "Enhanced due diligence requirement; failure to report leads to fine under Section 13.",
+    "fatf_ref": "FATF Recommendation 10 — Customer Due Diligence",
+    "risk_level": "MEDIUM"
+  }
+}

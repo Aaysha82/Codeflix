@@ -1,0 +1,329 @@
+/* FRONTEND/styles.css — ProofSAR AI Design System */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+/* ── Root Variables: Premium Dark Mode ───────────────────────── */
+:root {
+  --bg-main:    #0a0e14; /* Deep charcoal/black */
+  --bg-card:    rgba(30, 41, 59, 0.7); /* Glassmorphism translucent */
+  --navy:       #1e293b; 
+  --blue:       #3b82f6; /* Electric blue */
+  --accent:     #6366f1; /* Indigo */
+  --accent-glow:rgba(99, 102, 241, 0.15);
+  --green:      #10b981; /* Mint green */
+  --red:        #ef4444; /* Vivid red */
+  --orange:     #f59e0b; /* Amber */
+  --text:       #f8fafc; /* Near white */
+  --text-muted: #94a3b8; /* Slate-400 */
+  --border:     rgba(148, 163, 184, 0.1);
+  --shadow:     0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  --radius:     16px;
+  --radius-sm: 8px;
+}
+
+/* ── Global ─────────────────────────────────────────────────── */
+html, body, [data-testid="stAppViewContainer"] {
+  font-family: 'Outfit', sans-serif !important;
+  background: var(--bg-main) !important;
+  color: var(--text) !important;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.05) 0, transparent 50%), 
+    radial-gradient(at 50% 0%, rgba(99, 102, 241, 0.05) 0, transparent 50%) !important;
+}
+
+/* ── Hide Streamlit chrome ───────────────────────────────────── */
+#MainMenu, footer, header { visibility: hidden; }
+[data-testid="stToolbar"] { display: none; }
+
+/* ── Sidebar ─────────────────────────────────────────────────── */
+[data-testid="stSidebar"] {
+  background: #0f172a !important; /* Deep navy sidebar */
+  border-right: 1px solid var(--border);
+  box-shadow: 2px 0 16px rgba(0,0,0,0.5);
+}
+[data-testid="stSidebar"] .stButton > button {
+  border-radius: var(--radius-sm) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  text-align: left !important;
+  transition: all 0.18s ease !important;
+}
+[data-testid="stSidebar"] .stButton > button:hover {
+  background: var(--accent-lt) !important;
+  color: var(--accent) !important;
+  transform: translateX(2px);
+}
+
+/* ── Page Header ─────────────────────────────────────────────── */
+.page-header {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--blue) 60%, var(--accent) 100%);
+  border-radius: var(--radius);
+  padding: 28px 32px;
+  margin-bottom: 24px;
+  color: var(--white);
+  box-shadow: 0 4px 20px rgba(26,35,126,0.25);
+}
+.page-header h1 {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+  letter-spacing: -0.3px;
+}
+.page-header p {
+  font-size: 14px;
+  color: #ffffff !important; /* Force pure white for maximum visibility */
+  font-weight: 500;
+  margin: 0;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+/* ── Metric Cards ────────────────────────────────────────────── */
+.metric-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  box-shadow: var(--shadow);
+  transition: transform 0.2s ease;
+}
+.metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(26,35,126,0.12);
+}
+.metric-card .icon { font-size: 28px; margin-bottom: 8px; }
+.metric-card .label { font-size: 11px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+.metric-card .value { font-size: 28px; font-weight: 700; color: var(--text); line-height: 1; margin: 4px 0; }
+.metric-card .delta { font-size: 11px; color: var(--green); font-weight: 500; }
+
+/* ── Risk Badge ──────────────────────────────────────────────── */
+.badge {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.badge-high   { background: #ffebee; color: var(--red);    border: 1px solid #ffcdd2; }
+.badge-medium { background: #fff3e0; color: var(--orange);  border: 1px solid #ffe0b2; }
+.badge-low    { background: #e8f5e9; color: var(--green);   border: 1px solid #c8e6c9; }
+
+/* ── Card ────────────────────────────────────────────────────── */
+.card {
+  background: var(--bg-card);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px 24px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+.card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── Risk Score Bar ──────────────────────────────────────────── */
+.risk-bar-container {
+  background: #f0f0f0;
+  border-radius: 6px;
+  height: 10px;
+  width: 100%;
+  overflow: hidden;
+  margin: 6px 0;
+}
+.risk-bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.6s ease;
+}
+
+/* ── Table ───────────────────────────────────────────────────── */
+.stDataFrame { border-radius: var(--radius-sm) !important; border: 1px solid var(--border) !important; }
+.stDataFrame th { background: var(--navy) !important; color: var(--white) !important; font-weight: 600 !important; }
+
+/* ── Buttons ─────────────────────────────────────────────────── */
+.stButton > button {
+  border-radius: var(--radius-sm) !important;
+  font-weight: 600 !important;
+  transition: all 0.18s ease !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08) !important;
+}
+.stButton > button[kind="primary"] {
+  background: linear-gradient(135deg, var(--navy), var(--accent)) !important;
+  border: none !important;
+  color: var(--white) !important;
+}
+.stButton > button[kind="primary"]:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(26,35,126,0.3) !important;
+}
+
+/* ── Inputs ──────────────────────────────────────────────────── */
+.stTextInput > div > input,
+.stNumberInput > div > input,
+.stSelectbox > div > div {
+  border-radius: var(--radius-sm) !important;
+  border: 1px solid var(--border) !important;
+  font-family: 'Inter', sans-serif !important;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease !important;
+}
+.stTextInput > div > input:focus,
+.stNumberInput > div > input:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px rgba(25,118,210,0.12) !important;
+  outline: none !important;
+}
+
+/* ── Alert Boxes ─────────────────────────────────────────────── */
+.alert-high {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--text);
+  border-left: 4px solid var(--red);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 12px 16px;
+  margin: 8px 0;
+  font-size: 13px;
+}
+.alert-medium {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--text);
+  border-left: 4px solid var(--orange);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 12px 16px;
+  margin: 8px 0;
+  font-size: 13px;
+}
+.alert-low {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--text);
+  border-left: 4px solid var(--green);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 12px 16px;
+  margin: 8px 0;
+  font-size: 13px;
+}
+
+/* ── Login Page ──────────────────────────────────────────────── */
+.login-card {
+  max-width: 420px;
+  margin: 60px auto;
+  background: var(--white);
+  border-radius: 16px;
+  padding: 40px 36px;
+  box-shadow: 0 8px 40px rgba(26,35,126,0.12);
+  border: 1px solid var(--border);
+}
+.login-logo { text-align: center; margin-bottom: 24px; }
+.login-logo .shield { font-size: 52px; }
+.login-logo h2 { font-size: 22px; font-weight: 700; color: var(--navy); margin: 8px 0 4px; }
+.login-logo p  { font-size: 12px; color: var(--text-muted); }
+
+/* ── SAR Narrative ───────────────────────────────────────────── */
+.sar-box {
+  background: #fafbff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.8;
+  color: #2c2c3e;
+  white-space: pre-wrap;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+/* ── Reason Pills ────────────────────────────────────────────── */
+.reason-pill {
+  display: inline-block;
+  background: var(--accent-glow);
+  color: var(--text); 
+  border: 1px solid var(--accent);
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 11.5px;
+  font-weight: 600;
+  margin: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+/* ── Audit Row ───────────────────────────────────────────────── */
+.audit-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 12px;
+}
+.audit-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+.audit-hash {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 10.5px;
+  color: var(--text); /* Full visibility slate */
+  word-break: break-all;
+  background: var(--navy);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* ── Spinner ─────────────────────────────────────────────────── */
+.stSpinner > div { border-color: var(--accent) transparent transparent transparent !important; }
+
+/* ── Streamlit Global Overrides ───────────────────────────────── */
+[data-testid="stHeader"] { background: rgba(255,255,255,0) !important; }
+.stMarkdown p, .stMarkdown li { color: var(--text) !important; line-height: 1.6; }
+.stInfo { background-color: #f1f5f9 !important; color: #1e293b !important; border: 1px solid #cbd5e1 !important; }
+.stInfo p, .stInfo li, .stInfo span { color: #1e293b !important; font-weight: 500 !important; }
+.stWarning { background-color: #fffbeb !important; color: #92400e !important; border: 1px solid #fde68a !important; }
+.stWarning p, .stWarning li, .stWarning span { color: #78350f !important; font-weight: 600 !important; }
+
+/* Improve file uploader visibility */
+[data-testid="stFileUploader"] {
+    background: var(--white);
+    border: 2px dashed #cbd5e1;
+    border-radius: var(--radius);
+    padding: 20px;
+}
+[data-testid="stFileUploader"] section > div {
+    color: var(--text) !important;
+}
+
+/* Sidebar button active contrast */
+[data-testid="stSidebar"] .stButton > button[kind="primary"] {
+    background: var(--navy) !important;
+    color: var(--white) !important;
+    border: none !important;
+}
+[data-testid="stSidebar"] .stButton > button[kind="secondary"] {
+    background: #f1f5f9 !important;
+    color: #475569 !important;
+    border: 1px solid #e2e8f0 !important;
+}
+[data-testid="stSidebar"] .stButton > button[kind="secondary"]:hover {
+    background: #e2e8f0 !important;
+    color: var(--navy) !important;
+}
+
+/* Form input readability */
+.stTextInput input, .stNumberInput input {
+    color: var(--text) !important;
+    font-weight: 500 !important;
+}
+::placeholder {
+    color: #94a3b8 !important;
+    opacity: 1;
+}

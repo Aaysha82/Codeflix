@@ -14,6 +14,8 @@ BACKEND_CMD  = [sys.executable, "-m", "uvicorn", "BACKEND.main:app",
                 "--host", "0.0.0.0", "--port", "8000"]
 FRONTEND_CMD = [sys.executable, "-m", "streamlit", "run", "FRONTEND/app.py",
                 "--server.port", "8501", "--server.headless", "true"]
+CELERY_CMD  = [sys.executable, "-m", "celery", "-A", "BACKEND.celery_app", "worker",
+                "--loglevel", "info", "-P", "solo"] # -P solo for Windows stability
 
 BANNER = """
 +--------------------------------------------------------------+
@@ -23,6 +25,7 @@ BANNER = """
 |   Backend  -> http://localhost:8000                           |
 |   API Docs -> http://localhost:8000/docs                      |
 |   Frontend -> http://localhost:8501                           |
+|   Worker   -> Celery (Active)                                 |
 |                                                              |
 |   Default Login:                                             |
 |     admin   / Admin@2026   (full access)                     |
@@ -147,6 +150,7 @@ def main():
     procs = []
     if mode in ("backend", "both"):
         procs.append(run_cmd(BACKEND_CMD, "Backend"))
+        procs.append(run_cmd(CELERY_CMD,  "Worker"))
     if mode in ("frontend", "both"):
         procs.append(run_cmd(FRONTEND_CMD, "Frontend"))
 

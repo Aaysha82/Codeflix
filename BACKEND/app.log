@@ -230,3 +230,112 @@
 2026-04-16 22:15:09.895 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [12] SAR_GENERATED logged → 02d31d976b2e
 2026-04-16 22:15:09.897 | WARNING  | ALERTS.gmail_service:_send_email:30 - EMAIL_PASS is placeholder — skipping SMTP
 2026-04-16 22:15:09.957 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [13] ALERT_SENT logged → a3542739fcf2
+2026-04-16 23:34:08.234 | INFO     | BACKEND.main:lifespan:31 - ============================================================
+2026-04-16 23:34:08.235 | INFO     | BACKEND.main:lifespan:32 -   ProofSAR AI v1.0.0 starting …
+2026-04-16 23:34:08.236 | INFO     | BACKEND.main:lifespan:33 -   Environment : development
+2026-04-16 23:34:08.237 | INFO     | BACKEND.main:lifespan:34 -   Docs        : http://0.0.0.0:8000/docs
+2026-04-16 23:34:08.237 | INFO     | BACKEND.main:lifespan:35 - ============================================================
+2026-04-16 23:34:08.238 | WARNING  | ML.train_model:load_model:216 - Model not found. Auto-training...
+2026-04-16 23:34:08.239 | INFO     | ML.train_model:main:252 - === ProofSAR AI — ML Training Pipeline ===
+2026-04-16 23:34:08.862 | INFO     | ML.train_model:load_and_prepare_data:75 - Dataset: 14628 rows | Fraud: 183 (1.25%)
+2026-04-16 23:34:09.019 | INFO     | ML.train_model:train_and_evaluate:136 - SMOTE applied: 23112 samples (k=5)
+2026-04-16 23:34:09.795 | INFO     | ML.train_model:train_and_evaluate:150 - Training RandomForest (Calibrated)...
+2026-04-16 23:34:19.228 | INFO     | ML.train_model:train_and_evaluate:168 - RandomForest: AUC=0.9574 | P=0.6458 | R=0.8378 | F1=0.7294
+2026-04-16 23:34:19.246 | INFO     | ML.train_model:train_and_evaluate:150 - Training XGBoost (Calibrated)...
+2026-04-16 23:34:28.333 | INFO     | ML.train_model:train_and_evaluate:168 - XGBoost: AUC=0.9995 | P=0.9189 | R=0.9189 | F1=0.9189
+2026-04-16 23:34:28.359 | INFO     | ML.train_model:train_and_evaluate:150 - Training LogisticRegression (Calibrated)...
+2026-04-16 23:34:29.237 | INFO     | ML.train_model:train_and_evaluate:168 - LogisticRegression: AUC=0.9738 | P=0.1394 | R=0.9459 | F1=0.2431
+2026-04-16 23:35:15.634 | INFO     | ML.mlflow_tracker:log_model:33 - Model logged to MLflow artifacts: best_model
+2026-04-16 23:35:15.635 | INFO     | ML.train_model:train_and_evaluate:183 - 
+Best Model: XGBoost with AUC=0.9995
+2026-04-16 23:35:15.757 | SUCCESS  | ML.train_model:save_artifacts:208 - Saved model → ML/model.pkl
+2026-04-16 23:35:15.758 | SUCCESS  | ML.train_model:save_artifacts:209 - Saved scaler → ML/scaler.pkl
+2026-04-16 23:35:15.759 | SUCCESS  | ML.train_model:save_artifacts:210 - Saved metrics → ML/metrics.json
+2026-04-16 23:35:15.759 | INFO     | ML.train_model:main:256 - 
+=== Training Complete ===
+2026-04-16 23:35:15.760 | INFO     | ML.train_model:main:258 - RandomForest: AUC=0.9574 | F1=0.7294
+2026-04-16 23:35:15.760 | INFO     | ML.train_model:main:258 - XGBoost: AUC=0.9995 | F1=0.9189
+2026-04-16 23:35:15.761 | INFO     | ML.train_model:main:258 - LogisticRegression: AUC=0.9738 | F1=0.2431
+2026-04-16 23:35:15.921 | SUCCESS  | BACKEND.main:lifespan:41 - ML model loaded
+2026-04-16 23:35:18.624 | INFO     | AUTH.auth:seed_default_users:47 - Database seeded with default users: admin, analyst
+2026-04-16 23:35:18.624 | SUCCESS  | BACKEND.main:lifespan:56 - PostgreSQL/SQLite database initialized and seeded
+2026-04-16 23:43:48.039 | INFO     | BACKEND.main:lifespan:31 - ============================================================
+2026-04-16 23:43:48.040 | INFO     | BACKEND.main:lifespan:32 -   ProofSAR AI v1.0.0 starting …
+2026-04-16 23:43:48.041 | INFO     | BACKEND.main:lifespan:33 -   Environment : development
+2026-04-16 23:43:48.041 | INFO     | BACKEND.main:lifespan:34 -   Docs        : http://0.0.0.0:8000/docs
+2026-04-16 23:43:48.042 | INFO     | BACKEND.main:lifespan:35 - ============================================================
+2026-04-16 23:43:48.444 | SUCCESS  | BACKEND.main:lifespan:41 - ML model loaded
+2026-04-16 23:43:48.490 | SUCCESS  | BACKEND.main:lifespan:56 - PostgreSQL/SQLite database initialized and seeded
+2026-04-16 23:43:48.496 | INFO     | BACKEND.main:lifespan:62 - ProofSAR AI shutting down …
+2026-04-16 23:44:21.203 | INFO     | BACKEND.main:lifespan:31 - ============================================================
+2026-04-16 23:44:21.205 | INFO     | BACKEND.main:lifespan:32 -   ProofSAR AI v1.0.0 starting …
+2026-04-16 23:44:21.206 | INFO     | BACKEND.main:lifespan:33 -   Environment : development
+2026-04-16 23:44:21.206 | INFO     | BACKEND.main:lifespan:34 -   Docs        : http://0.0.0.0:8000/docs
+2026-04-16 23:44:21.207 | INFO     | BACKEND.main:lifespan:35 - ============================================================
+2026-04-16 23:44:21.629 | SUCCESS  | BACKEND.main:lifespan:41 - ML model loaded
+2026-04-16 23:44:21.688 | SUCCESS  | BACKEND.main:lifespan:56 - PostgreSQL/SQLite database initialized and seeded
+2026-04-16 23:44:21.694 | INFO     | BACKEND.main:lifespan:62 - ProofSAR AI shutting down …
+2026-04-16 23:45:54.484 | INFO     | BACKEND.main:lifespan:31 - ============================================================
+2026-04-16 23:45:54.486 | INFO     | BACKEND.main:lifespan:32 -   ProofSAR AI v1.0.0 starting …
+2026-04-16 23:45:54.487 | INFO     | BACKEND.main:lifespan:33 -   Environment : development
+2026-04-16 23:45:54.488 | INFO     | BACKEND.main:lifespan:34 -   Docs        : http://0.0.0.0:8000/docs
+2026-04-16 23:45:54.489 | INFO     | BACKEND.main:lifespan:35 - ============================================================
+2026-04-16 23:45:54.942 | SUCCESS  | BACKEND.main:lifespan:41 - ML model loaded
+2026-04-16 23:45:55.007 | SUCCESS  | BACKEND.main:lifespan:56 - PostgreSQL/SQLite database initialized and seeded
+2026-04-16 23:46:07.002 | INFO     | BACKEND.main:lifespan:31 - ============================================================
+2026-04-16 23:46:07.004 | INFO     | BACKEND.main:lifespan:32 -   ProofSAR AI v1.0.0 starting …
+2026-04-16 23:46:07.005 | INFO     | BACKEND.main:lifespan:33 -   Environment : development
+2026-04-16 23:46:07.006 | INFO     | BACKEND.main:lifespan:34 -   Docs        : http://0.0.0.0:8000/docs
+2026-04-16 23:46:07.007 | INFO     | BACKEND.main:lifespan:35 - ============================================================
+2026-04-16 23:46:07.435 | SUCCESS  | BACKEND.main:lifespan:41 - ML model loaded
+2026-04-16 23:46:07.471 | SUCCESS  | BACKEND.main:lifespan:56 - PostgreSQL/SQLite database initialized and seeded
+2026-04-16 23:46:07.475 | INFO     | BACKEND.main:lifespan:62 - ProofSAR AI shutting down …
+2026-04-16 23:46:34.091 | INFO     | BACKEND.main:lifespan:31 - ============================================================
+2026-04-16 23:46:34.092 | INFO     | BACKEND.main:lifespan:32 -   ProofSAR AI v1.0.0 starting …
+2026-04-16 23:46:34.093 | INFO     | BACKEND.main:lifespan:33 -   Environment : development
+2026-04-16 23:46:34.094 | INFO     | BACKEND.main:lifespan:34 -   Docs        : http://0.0.0.0:8000/docs
+2026-04-16 23:46:34.095 | INFO     | BACKEND.main:lifespan:35 - ============================================================
+2026-04-16 23:46:34.650 | SUCCESS  | BACKEND.main:lifespan:41 - ML model loaded
+2026-04-16 23:46:34.707 | SUCCESS  | BACKEND.main:lifespan:56 - PostgreSQL/SQLite database initialized and seeded
+2026-04-16 23:47:17.907 | INFO     | BACKEND.main:lifespan:62 - ProofSAR AI shutting down …
+2026-04-16 23:49:21.666 | INFO     | BACKEND.main:lifespan:31 - ============================================================
+2026-04-16 23:49:21.667 | INFO     | BACKEND.main:lifespan:32 -   ProofSAR AI v1.0.0 starting …
+2026-04-16 23:49:21.667 | INFO     | BACKEND.main:lifespan:33 -   Environment : development
+2026-04-16 23:49:21.668 | INFO     | BACKEND.main:lifespan:34 -   Docs        : http://0.0.0.0:8000/docs
+2026-04-16 23:49:21.668 | INFO     | BACKEND.main:lifespan:35 - ============================================================
+2026-04-16 23:49:22.016 | SUCCESS  | BACKEND.main:lifespan:41 - ML model loaded
+2026-04-16 23:49:22.041 | SUCCESS  | BACKEND.main:lifespan:56 - PostgreSQL/SQLite database initialized and seeded
+2026-04-16 23:51:06.778 | INFO     | BACKEND.main:lifespan:31 - ============================================================
+2026-04-16 23:51:06.779 | INFO     | BACKEND.main:lifespan:32 -   ProofSAR AI v1.0.0 starting …
+2026-04-16 23:51:06.780 | INFO     | BACKEND.main:lifespan:33 -   Environment : development
+2026-04-16 23:51:06.780 | INFO     | BACKEND.main:lifespan:34 -   Docs        : http://0.0.0.0:8000/docs
+2026-04-16 23:51:06.781 | INFO     | BACKEND.main:lifespan:35 - ============================================================
+2026-04-16 23:51:07.104 | SUCCESS  | BACKEND.main:lifespan:41 - ML model loaded
+2026-04-16 23:51:07.131 | SUCCESS  | BACKEND.main:lifespan:56 - PostgreSQL/SQLite database initialized and seeded
+2026-04-16 23:51:07.133 | INFO     | BACKEND.main:lifespan:62 - ProofSAR AI shutting down …
+2026-04-16 23:52:33.557 | INFO     | BACKEND.main:lifespan:31 - ============================================================
+2026-04-16 23:52:33.558 | INFO     | BACKEND.main:lifespan:32 -   ProofSAR AI v1.0.0 starting …
+2026-04-16 23:52:33.559 | INFO     | BACKEND.main:lifespan:33 -   Environment : development
+2026-04-16 23:52:33.559 | INFO     | BACKEND.main:lifespan:34 -   Docs        : http://0.0.0.0:8000/docs
+2026-04-16 23:52:33.560 | INFO     | BACKEND.main:lifespan:35 - ============================================================
+2026-04-16 23:52:33.813 | SUCCESS  | BACKEND.main:lifespan:41 - ML model loaded
+2026-04-16 23:52:33.840 | SUCCESS  | BACKEND.main:lifespan:56 - PostgreSQL/SQLite database initialized and seeded
+2026-04-16 23:52:33.843 | INFO     | BACKEND.main:lifespan:62 - ProofSAR AI shutting down …
+2026-04-16 23:52:57.861 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [9] AUTH_LOGIN logged → ee6eb65e187c
+2026-04-16 23:54:20.737 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [10] AUTH_LOGIN logged → bca58a2179e1
+2026-04-16 23:56:33.282 | WARNING  | BACKEND.routes:analyze:165 - SHAP failed: Model type not yet supported by TreeExplainer: <class 'sklearn.calibration.CalibratedClassifierCV'>
+2026-04-16 23:56:33.361 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [11] TRANSACTION_ANALYZED logged → 24508ac9db79
+2026-04-16 23:56:33.362 | WARNING  | ALERTS.gmail_service:_send_email:30 - EMAIL_PASS is placeholder — skipping SMTP
+2026-04-16 23:56:33.438 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [12] ALERT_SENT logged → d8d3a7d2a90d
+2026-04-16 23:57:22.394 | ERROR    | BACKEND.routes:batch_analysis_async:224 - Async batch trigger error: No module named 'sqla'
+2026-04-16 23:57:30.330 | ERROR    | BACKEND.routes:batch_analysis_async:224 - Async batch trigger error: No module named 'sqla'
+2026-04-17 00:00:48.140 | ERROR    | BACKEND.routes:batch_analysis_async:224 - Async batch trigger error: No module named 'sqla'
+2026-04-17 00:07:01.211 | INFO     | BACKEND.main:lifespan:31 - ============================================================
+2026-04-17 00:07:01.212 | INFO     | BACKEND.main:lifespan:32 -   ProofSAR AI v1.0.0 starting …
+2026-04-17 00:07:01.213 | INFO     | BACKEND.main:lifespan:33 -   Environment : development
+2026-04-17 00:07:01.214 | INFO     | BACKEND.main:lifespan:34 -   Docs        : http://0.0.0.0:8000/docs
+2026-04-17 00:07:01.215 | INFO     | BACKEND.main:lifespan:35 - ============================================================
+2026-04-17 00:07:01.536 | SUCCESS  | BACKEND.main:lifespan:41 - ML model loaded
+2026-04-17 00:07:01.580 | SUCCESS  | BACKEND.main:lifespan:56 - PostgreSQL/SQLite database initialized and seeded
+2026-04-17 00:07:28.521 | INFO     | AUDIT.hash_chain:append_event:57 - Audit [13] AUTH_LOGIN logged → bd787a0c5cd1
+2026-04-17 00:07:54.503 | ERROR    | BACKEND.routes:batch_analysis_async:224 - Async batch trigger error: No module named 'sqla'

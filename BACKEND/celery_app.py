@@ -5,14 +5,14 @@ Celery configuration for asynchronous AML processing.
 import os
 from celery import Celery
 
-# Use a local SQLite database for the demo since Redis is missing
-# In production, swap back to Redis: REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
-REDIS_URL = "sqla+sqlite:///BACKEND/celery_broker.db"
+# Local SQLite broker (for demo/dev)
+BROKER_URL  = "sqla+sqlite:///BACKEND/celery_broker.db"
+RESULTS_URL = "db+sqlite:///BACKEND/celery_broker.db"
 
 celery_app = Celery(
     "proofsar_tasks",
-    broker=REDIS_URL,
-    backend=REDIS_URL,
+    broker=BROKER_URL,
+    backend=RESULTS_URL,
     include=["BACKEND.tasks"]
 )
 
